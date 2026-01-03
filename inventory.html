@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minibar - Inventory</title>
+<style>
+/* Reset and Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #0b0f1a;
+  color: #e5e7eb;
+  touch-action: pan-y; /* Enable vertical scrolling */
+}
+
+/* Inventory Page Specific Styles */
+.inventory-page {
+  padding: 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0b0f1a 0%, #1e293b 100%);
+}
+
+.inventory-container {
+  max-width: 800px;
+  margin: 60px auto 0;
+  background: rgba(15, 23, 42, 0.9);
+  padding: 30px;
+  border-radius: 16px;
+  border: 2px solid #475569;
+}
+
+.inventory-title {
+  color: #e5e7eb;
+  font-size: 32px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.inventory-controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.clear-button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #ef4444;
+  color: white;
+}
+
+.clear-button:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
+
+.inventory-list {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 12px;
+  padding: 20px;
+  min-height: 300px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.inventory-room-item {
+  background: rgba(15, 23, 42, 0.8);
+  padding: 20px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  border: 2px solid #475569;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Swipe effect styling */
+.inventory-room-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.3) 100%);
+  transition: width 0.3s ease;
+  z-index: 1;
+}
+
+.inventory-room-item.swiping::before {
+  width: 100%;
+}
+
+.inventory-room-item.green {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+  transform: translateX(0);
+}
+
+.inventory-room-item.green .room-number {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.inventory-room-item.green .room-summary {
+  color: #a7f3d0;
+}
+
+.inventory-room-item.green .checkmark {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.inventory-room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.room-number {
+  color: #60a5fa;
+  font-weight: bold;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkmark {
+  color: #10b981;
+  font-size: 18px;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.3s ease;
+}
+
+.room-summary {
+  color: #cbd5e1;
+  font-size: 16px;
+  max-width: 70%;
+  text-align: right;
+}
+
+.no-inventory {
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+}
+
+.inventory-help {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 12px;
+  font-size: 14px;
+  color: #94a3b8;
+  border-left: 4px solid #3b82f6;
+  line-height: 1.6;
+}
+
+.back-arrow {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-size: 18px;
+  color: #e5e7eb;
+  cursor: pointer;
+  background: rgba(30, 41, 59, 0.8);
+  padding: 10px 15px;
+  border-radius: 12px;
+  border: 2px solid #475569;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 100;
+}
+
+.back-arrow:hover {
+  background: rgba(51, 65, 85, 0.9);
+  transform: translateX(-3px);
+}
+
+/* Swipe instruction */
+.swipe-hint {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: rgba(30, 41, 59, 0.3);
+  border-radius: 8px;
+}
+
+.swipe-hint .swipe-icon {
+  display: inline-block;
+  margin: 0 5px;
+  animation: swipeHint 2s infinite;
+}
+
+@keyframes swipeHint {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  50% { transform: translateX(20px); opacity: 0.5; }
+}
+
+/* Room count badge */
+.room-count {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(30, 41, 59, 0.8);
+  color: #e5e7eb;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid #475569;
+  font-size: 14px;
+  font-weight: bold;
+  z-index: 100;
+}
+
+/* Swipe feedback animation */
+.swipe-feedback {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 20px;
+  color: #10b981;
+  font-size: 16px;
+  font-weight: bold;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: all 0.3s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.inventory-room-item.swiping .swipe-feedback {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Progress indicator for swipe */
+.swipe-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #10b981;
+  border-radius: 0 0 12px 12px;
+  width: 0%;
+  transition: width 0.2s ease;
+}
+</style>
+</head>
+
+<body class="inventory-page">
+
+<div class="back-arrow" onclick="window.location.href='main.html'">← უკან</div>
+
+<div class="room-count" id="roomCount">ოთახები: 0</div>
+
+<div class="inventory-container">
+  <h1 class="inventory-title">📋 შევსება</h1>
+  
+  <div class="swipe-hint">
+    <span class="swipe-icon">➡️</span> გაუსვი მარჯვნივ ოთახს
+    <span class="swipe-icon">➡️</span>
+  </div>
+  
+  <div class="inventory-controls">
+    <button class="clear-button" id="clearButton">გასუფთავება</button>
+  </div>
+  
+  <div class="inventory-list" id="inventoryList">
+    <!-- Inventory items will be loaded here -->
+  </div>
+</div>
+
+<script>
+// Enhanced Inventory Manager for inventory page
+const InventoryManager = {
+  // Get all inventory
+  getAllInventory() {
+    const inventory = localStorage.getItem('minibarInventory');
+    return inventory ? JSON.parse(inventory) : {};
+  },
+  
+  // Get marked rooms (green rooms)
+  getMarkedRooms() {
+    const markedRooms = localStorage.getItem('markedRooms');
+    return markedRooms ? JSON.parse(markedRooms) : [];
+  },
+  
+  // Mark room as green
+  markRoom(roomNumber) {
+    const markedRooms = this.getMarkedRooms();
+    if (!markedRooms.includes(roomNumber)) {
+      markedRooms.push(roomNumber);
+      localStorage.setItem('markedRooms', JSON.stringify(markedRooms));
+    }
+    return true;
+  },
+  
+  // Unmark room (remove from green)
+  unmarkRoom(roomNumber) {
+    const markedRooms = this.getMarkedRooms();
+    const index = markedRooms.indexOf(roomNumber);
+    if (index > -1) {
+      markedRooms.splice(index, 1);
+      localStorage.setItem('markedRooms', JSON.stringify(markedRooms));
+    }
+    return true;
+  },
+  
+  // Check if room is marked
+  isRoomMarked(roomNumber) {
+    const markedRooms = this.getMarkedRooms();
+    return markedRooms.includes(roomNumber);
+  },
+  
+  // Get all rooms summary
+  getAllRoomsSummary() {
+    const allInventory = this.getAllInventory();
+    const markedRooms = this.getMarkedRooms();
+    const summaries = [];
+    
+    Object.keys(allInventory).forEach(roomNumber => {
+      const roomInventory = allInventory[roomNumber];
+      const products = roomInventory.products || {};
+      const summary = [];
+      
+      Object.keys(products).forEach(productId => {
+        const product = products[productId];
+        if (product.count > 0) {
+          summary.push(`${product.count} ${product.name}`);
+        }
+      });
+      
+      if (summary.length > 0) {
+        summaries.push({
+          room: roomNumber,
+          summary: summary.join(', '),
+          isMarked: markedRooms.includes(roomNumber)
+        });
+      }
+    });
+    
+    // Sort by room number
+    summaries.sort((a, b) => parseInt(a.room) - parseInt(b.room));
+    
+    return summaries;
+  },
+  
+  // Clear all inventory data
+  clearAll() {
+    localStorage.setItem('minibarInventory', JSON.stringify({}));
+    localStorage.setItem('markedRooms', JSON.stringify([]));
+    return true;
+  }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  const inventoryList = document.getElementById('inventoryList');
+  const clearButton = document.getElementById('clearButton');
+  const roomCount = document.getElementById('roomCount');
+  
+  // Swipe detection variables
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let currentSwipeItem = null;
+  const swipeThreshold = 100; // Minimum swipe distance for green mark
+  const swipeCancelThreshold = 30; // Cancel if swipe is too small
+  
+  function loadInventory() {
+    const summaries = InventoryManager.getAllRoomsSummary();
+    inventoryList.innerHTML = '';
+    
+    if (summaries.length === 0) {
+      inventoryList.innerHTML = `
+        <div class="no-inventory">
+          <p>ჯერჯერობით არ დაგიმატებია ოთახი</p>
+          <p>შედი ოთახში და შეამოწმე</p>
+        </div>
+      `;
+      roomCount.textContent = 'Rooms: 0';
+      return;
+    }
+    
+    roomCount.textContent = `Rooms: ${summaries.length}`;
+    
+    summaries.forEach(item => {
+      const roomItem = document.createElement('div');
+      roomItem.className = `inventory-room-item ${item.isMarked ? 'green' : ''}`;
+      roomItem.setAttribute('data-room', item.room);
+      
+      roomItem.innerHTML = `
+        <div class="swipe-feedback">Mark as Green ✓</div>
+        <div class="swipe-progress"></div>
+        <div class="inventory-room-header">
+          <span class="room-number">
+            ${item.isMarked ? '<span class="checkmark">✓</span>' : ''}
+            Room ${item.room}
+          </span>
+          <span class="room-summary">${item.summary}</span>
+        </div>
+      `;
+      
+      // Add touch events for swipe detection
+      roomItem.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        currentSwipeItem = roomItem;
+        roomItem.classList.add('swiping');
+      });
+      
+      roomItem.addEventListener('touchmove', (e) => {
+        if (currentSwipeItem !== roomItem) return;
+        
+        touchEndX = e.touches[0].clientX;
+        const swipeDistance = touchEndX - touchStartX;
+        
+        // Calculate swipe progress (0% to 100%)
+        const progress = Math.min(Math.max(swipeDistance / swipeThreshold, 0), 1);
+        
+        // Update progress bar
+        const progressBar = roomItem.querySelector('.swipe-progress');
+        progressBar.style.width = `${progress * 100}%`;
+        
+        // Update visual feedback
+        if (swipeDistance > swipeCancelThreshold) {
+          roomItem.style.transform = `translateX(${Math.min(swipeDistance * 0.5, 50)}px)`;
+        }
+      });
+      
+      roomItem.addEventListener('touchend', (e) => {
+        if (currentSwipeItem !== roomItem) return;
+        
+        touchEndX = e.changedTouches[0].clientX;
+        const swipeDistance = touchEndX - touchStartX;
+        
+        // Reset item position
+        roomItem.classList.remove('swiping');
+        roomItem.style.transform = '';
+        
+        // Reset progress bar
+        const progressBar = roomItem.querySelector('.swipe-progress');
+        progressBar.style.width = '0%';
+        
+        // Handle swipe right (green mark)
+        if (swipeDistance > swipeThreshold) {
+          handleSwipeRight(item.room, roomItem);
+        }
+        
+        currentSwipeItem = null;
+      });
+      
+      // Also support mouse events for desktop testing
+      roomItem.addEventListener('mousedown', (e) => {
+        touchStartX = e.clientX;
+        currentSwipeItem = roomItem;
+        roomItem.classList.add('swiping');
+      });
+      
+      roomItem.addEventListener('mousemove', (e) => {
+        if (currentSwipeItem !== roomItem || e.buttons !== 1) return;
+        
+        touchEndX = e.clientX;
+        const swipeDistance = touchEndX - touchStartX;
+        
+        // Calculate swipe progress
+        const progress = Math.min(Math.max(swipeDistance / swipeThreshold, 0), 1);
+        
+        // Update progress bar
+        const progressBar = roomItem.querySelector('.swipe-progress');
+        progressBar.style.width = `${progress * 100}%`;
+        
+        // Update visual feedback
+        if (swipeDistance > swipeCancelThreshold) {
+          roomItem.style.transform = `translateX(${Math.min(swipeDistance * 0.5, 50)}px)`;
+        }
+      });
+      
+      roomItem.addEventListener('mouseup', (e) => {
+        if (currentSwipeItem !== roomItem) return;
+        
+        touchEndX = e.clientX;
+        const swipeDistance = touchEndX - touchStartX;
+        
+        // Reset item position
+        roomItem.classList.remove('swiping');
+        roomItem.style.transform = '';
+        
+        // Reset progress bar
+        const progressBar = roomItem.querySelector('.swipe-progress');
+        progressBar.style.width = '0%';
+        
+        // Handle swipe right (green mark)
+        if (swipeDistance > swipeThreshold) {
+          handleSwipeRight(item.room, roomItem);
+        }
+        
+        currentSwipeItem = null;
+      });
+      
+      // Prevent default drag behavior
+      roomItem.addEventListener('dragstart', (e) => {
+        e.preventDefault();
+      });
+      
+      inventoryList.appendChild(roomItem);
+    });
+  }
+  
+  function handleSwipeRight(roomNumber, roomElement) {
+    const isCurrentlyMarked = InventoryManager.isRoomMarked(roomNumber);
+    
+    if (isCurrentlyMarked) {
+      // If already green, unmark it
+      InventoryManager.unmarkRoom(roomNumber);
+      roomElement.classList.remove('green');
+      
+      // Show notification
+      showNotification(`Room ${roomNumber} unmarked`, '#3b82f6');
+    } else {
+      // Mark as green
+      InventoryManager.markRoom(roomNumber);
+      roomElement.classList.add('green');
+      
+      // Show success notification with animation
+      showNotification(`Room ${roomNumber} marked as green ✓`, '#10b981');
+      
+      // Add a subtle animation
+      roomElement.style.animation = 'none';
+      setTimeout(() => {
+        roomElement.style.animation = 'pulseGreen 0.5s ease';
+      }, 10);
+    }
+    
+    // Update the checkmark visibility
+    updateRoomItemVisuals(roomNumber, roomElement);
+  }
+  
+  function updateRoomItemVisuals(roomNumber, roomElement) {
+    const isMarked = InventoryManager.isRoomMarked(roomNumber);
+    const roomNumberSpan = roomElement.querySelector('.room-number');
+    
+    if (isMarked) {
+      roomNumberSpan.innerHTML = `<span class="checkmark">✓</span> Room ${roomNumber}`;
+    } else {
+      roomNumberSpan.innerHTML = `Room ${roomNumber}`;
+    }
+  }
+  
+  // Add CSS animation for green pulse
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes pulseGreen {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  function showNotification(message, color = '#10b981') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background: ${color}20;
+      color: ${color === '#10b981' ? '#a7f3d0' : '#bfdbfe'};
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: 2px solid ${color}60;
+      z-index: 1000;
+      font-size: 14px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      animation: slideIn 0.3s ease;
+      backdrop-filter: blur(10px);
+    `;
+    
+    // Add animation keyframes if not already added
+    if (!document.querySelector('#notification-styles')) {
+      const notificationStyle = document.createElement('style');
+      notificationStyle.id = 'notification-styles';
+      notificationStyle.textContent = `
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(100%); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(notificationStyle);
+    }
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Remove notification after 2 seconds
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          document.body.removeChild(notification);
+        }
+      }, 300);
+    }, 2000);
+  }
+  
+  clearButton.addEventListener('click', () => {
+    if (confirm('დარწმუნებული ხარ? ყველაფერი წაიშლება')) {
+      InventoryManager.clearAll();
+      loadInventory();
+      showNotification('ყველაფერი წაშლილია', '#ef4444');
+    }
+  });
+  
+  // Load inventory on page load
+  loadInventory();
+  
+  // Auto-refresh inventory every 10 seconds
+  setInterval(() => {
+    loadInventory();
+  }, 10000);
+});
+</script>
+
+</body>
+</html>
