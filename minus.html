@@ -360,10 +360,9 @@ body {
 <a href="main.html" class="back-arrow">← უკან</a>
 
 <div class="minus-container">
-  <h1 class="minus-title">📉 მინუსები</h1>
+  <h1 class="minus-title"> მინუსები</h1>
   
   <div class="minus-controls">
-    <button class="save-button" id="saveButton">💾 შენახვა</button>
     <button class="clear-button" id="clearButton">🗑️ გასუფთავება</button>
     <button class="back-button" onclick="window.location.href='inventory.html'">📋 ინვენტარი</button>
   </div>
@@ -498,7 +497,6 @@ const MinusManager = {
 
 document.addEventListener('DOMContentLoaded', function() {
   const minusList = document.getElementById('minusList');
-  const saveButton = document.getElementById('saveButton');
   const clearButton = document.getElementById('clearButton');
   const summaryBox = document.getElementById('summaryBox');
   const summaryTotal = document.getElementById('summaryTotal');
@@ -643,10 +641,6 @@ document.addEventListener('DOMContentLoaded', function() {
     updateSummary();
   };
   
-  saveButton.addEventListener('click', function() {
-    // For now, just show a notification since data is auto-saved
-    showNotification('შენახულია!', '#10b981');
-  });
   
   clearButton.addEventListener('click', function() {
     if (confirm('დარწმუნებული ხარ? ყველა მონაცემი წაიშლება')) {
