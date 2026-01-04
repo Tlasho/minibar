@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Minibar - Inventory</title>
 <style>
-/* Reset and Base Styles */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -16,10 +15,8 @@ body {
   font-family: Arial, sans-serif;
   background: #0b0f1a;
   color: #e5e7eb;
-  touch-action: pan-y; /* Enable vertical scrolling */
 }
 
-/* Inventory Page Specific Styles */
 .inventory-page {
   padding: 20px;
   min-height: 100vh;
@@ -46,9 +43,10 @@ body {
   display: flex;
   gap: 15px;
   margin-bottom: 30px;
+  flex-wrap: wrap;
 }
 
-.clear-button {
+.clear-button, .export-button, .sort-button {
   padding: 12px 20px;
   border: none;
   border-radius: 10px;
@@ -56,6 +54,9 @@ body {
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
+}
+
+.clear-button {
   background: #ef4444;
   color: white;
 }
@@ -63,6 +64,31 @@ body {
 .clear-button:hover {
   background: #dc2626;
   transform: translateY(-2px);
+}
+
+.export-button {
+  background: #3b82f6;
+  color: white;
+}
+
+.export-button:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.sort-button {
+  background: #8b5cf6;
+  color: white;
+}
+
+.sort-button:hover {
+  background: #7c3aed;
+  transform: translateY(-2px);
+}
+
+.sort-button.active {
+  background: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
 }
 
 .inventory-list {
@@ -83,14 +109,10 @@ body {
   transition: all 0.3s ease;
   cursor: pointer;
   user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   position: relative;
   overflow: hidden;
 }
 
-/* Swipe effect styling */
 .inventory-room-item::before {
   content: '';
   position: absolute;
@@ -111,7 +133,7 @@ body {
   background: rgba(16, 185, 129, 0.15);
   border-color: #10b981;
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
-  transform: translateX(0);
+  opacity: 0.8;
 }
 
 .inventory-room-item.green .room-number {
@@ -132,8 +154,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: relative;
-  z-index: 2;
+  margin-bottom: 10px;
 }
 
 .room-number {
@@ -156,25 +177,29 @@ body {
 .room-summary {
   color: #cbd5e1;
   font-size: 16px;
-  max-width: 70%;
-  text-align: right;
+  width: 100%;
+}
+
+.product-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.product-item {
+  background: rgba(30, 41, 59, 0.6);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  font-size: 14px;
+  color: #cbd5e1;
 }
 
 .no-inventory {
   text-align: center;
   padding: 40px;
   color: #94a3b8;
-}
-
-.inventory-help {
-  margin-top: 30px;
-  padding: 20px;
-  background: rgba(30, 41, 59, 0.5);
-  border-radius: 12px;
-  font-size: 14px;
-  color: #94a3b8;
-  border-left: 4px solid #3b82f6;
-  line-height: 1.6;
 }
 
 .back-arrow {
@@ -193,6 +218,7 @@ body {
   align-items: center;
   gap: 5px;
   z-index: 100;
+  text-decoration: none;
 }
 
 .back-arrow:hover {
@@ -200,30 +226,16 @@ body {
   transform: translateX(-3px);
 }
 
-/* Swipe instruction */
 .swipe-hint {
   text-align: center;
   color: #94a3b8;
   font-size: 14px;
-  margin-top: 10px;
   margin-bottom: 20px;
   padding: 10px;
   background: rgba(30, 41, 59, 0.3);
   border-radius: 8px;
 }
 
-.swipe-hint .swipe-icon {
-  display: inline-block;
-  margin: 0 5px;
-  animation: swipeHint 2s infinite;
-}
-
-@keyframes swipeHint {
-  0%, 100% { transform: translateX(0); opacity: 1; }
-  50% { transform: translateX(20px); opacity: 0.5; }
-}
-
-/* Room count badge */
 .room-count {
   position: fixed;
   top: 20px;
@@ -238,7 +250,6 @@ body {
   z-index: 100;
 }
 
-/* Swipe feedback animation */
 .swipe-feedback {
   position: absolute;
   top: 0;
@@ -264,7 +275,6 @@ body {
   transform: translateX(0);
 }
 
-/* Progress indicator for swipe */
 .swipe-progress {
   position: absolute;
   bottom: 0;
@@ -275,12 +285,72 @@ body {
   width: 0%;
   transition: width 0.2s ease;
 }
+
+.total-items {
+  background: rgba(30, 41, 59, 0.8);
+  color: #e5e7eb;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid #475569;
+  font-size: 14px;
+  margin-top: 15px;
+  text-align: center;
+}
+
+.last-updated {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 5px;
+}
+
+.sort-indicator {
+  display: inline-block;
+  margin-left: 10px;
+  font-size: 12px;
+  color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid #8b5cf6;
+}
+
+@media (max-width: 768px) {
+  .inventory-container {
+    margin-top: 80px;
+    padding: 20px;
+  }
+  
+  .inventory-title {
+    font-size: 24px;
+  }
+  
+  .room-number {
+    font-size: 18px;
+  }
+  
+  .product-item {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  
+  .back-arrow {
+    top: 15px;
+    left: 15px;
+    padding: 8px 12px;
+  }
+  
+  .room-count {
+    top: 15px;
+    right: 15px;
+    font-size: 12px;
+  }
+}
 </style>
 </head>
 
 <body class="inventory-page">
 
-<div class="back-arrow" onclick="window.location.href='main.html'">← უკან</div>
+<a href="main.html" class="back-arrow">← უკან</a>
 
 <div class="room-count" id="roomCount">ოთახები: 0</div>
 
@@ -288,35 +358,33 @@ body {
   <h1 class="inventory-title">📋 შევსება</h1>
   
   <div class="swipe-hint">
-    <span class="swipe-icon">➡️</span> გაუსვი მარჯვნივ ოთახს
-    <span class="swipe-icon">➡️</span>
+    გაუსვი მარჯვნივ ოთახს
   </div>
   
   <div class="inventory-controls">
     <button class="clear-button" id="clearButton">გასუფთავება</button>
+    <button class="export-button" id="exportButton">ექსპორტი</button>
+    <button class="sort-button" id="sortButton">დალაგება</button>
   </div>
   
   <div class="inventory-list" id="inventoryList">
     <!-- Inventory items will be loaded here -->
   </div>
+  
+  <div class="total-items" onclick="window.location.href='totals.html'" id="totalItems">სულ პროდუქტები: 0</div>
 </div>
-
 <script>
-// Enhanced Inventory Manager for inventory page
 const InventoryManager = {
-  // Get all inventory
   getAllInventory() {
     const inventory = localStorage.getItem('minibarInventory');
     return inventory ? JSON.parse(inventory) : {};
   },
   
-  // Get marked rooms (green rooms)
   getMarkedRooms() {
     const markedRooms = localStorage.getItem('markedRooms');
     return markedRooms ? JSON.parse(markedRooms) : [];
   },
   
-  // Mark room as green
   markRoom(roomNumber) {
     const markedRooms = this.getMarkedRooms();
     if (!markedRooms.includes(roomNumber)) {
@@ -326,7 +394,6 @@ const InventoryManager = {
     return true;
   },
   
-  // Unmark room (remove from green)
   unmarkRoom(roomNumber) {
     const markedRooms = this.getMarkedRooms();
     const index = markedRooms.indexOf(roomNumber);
@@ -337,49 +404,132 @@ const InventoryManager = {
     return true;
   },
   
-  // Check if room is marked
   isRoomMarked(roomNumber) {
     const markedRooms = this.getMarkedRooms();
     return markedRooms.includes(roomNumber);
   },
   
-  // Get all rooms summary
-  getAllRoomsSummary() {
+  getAllRoomsSummary(sortBy = 'time') {
     const allInventory = this.getAllInventory();
     const markedRooms = this.getMarkedRooms();
     const summaries = [];
+    let totalProducts = 0;
     
     Object.keys(allInventory).forEach(roomNumber => {
       const roomInventory = allInventory[roomNumber];
       const products = roomInventory.products || {};
-      const summary = [];
+      const productItems = [];
+      let roomProductCount = 0;
       
-      Object.keys(products).forEach(productId => {
-        const product = products[productId];
-        if (product.count > 0) {
-          summary.push(`${product.count} ${product.name}`);
-        }
-      });
+      Object.keys(products)
+        .sort((a, b) => parseInt(a) - parseInt(b))
+        .forEach(productId => {
+          const product = products[productId];
+          if (product.count > 0) {
+            productItems.push({
+              name: product.name,
+              count: product.count
+            });
+            roomProductCount += product.count;
+          }
+        });
       
-      if (summary.length > 0) {
+      if (productItems.length > 0) {
+        totalProducts += roomProductCount;
         summaries.push({
           room: roomNumber,
-          summary: summary.join(', '),
-          isMarked: markedRooms.includes(roomNumber)
+          products: productItems,
+          totalCount: roomProductCount,
+          isMarked: markedRooms.includes(roomNumber),
+          lastUpdated: roomInventory.lastUpdated || new Date().toISOString(),
+          timestamp: new Date(roomInventory.lastUpdated || new Date()).getTime()
         });
       }
     });
     
-    // Sort by room number
-    summaries.sort((a, b) => parseInt(a.room) - parseInt(b.room));
+    const sortedSummaries = this.sortSummaries(summaries, sortBy);
     
+    return {
+      summaries: sortedSummaries,
+      totalProducts,
+      sortBy
+    };
+  },
+  
+  sortSummaries(summaries, sortBy) {
+    if (sortBy === 'time') {
+      return summaries.sort((a, b) => {
+        if (a.isMarked && !b.isMarked) return 1;
+        if (!a.isMarked && b.isMarked) return -1;
+        return b.timestamp - a.timestamp;
+      });
+    } else if (sortBy === 'room') {
+      return summaries.sort((a, b) => parseInt(a.room) - parseInt(b.room));
+    } else if (sortBy === 'products') {
+      return summaries.sort((a, b) => {
+        if (a.isMarked && !b.isMarked) return 1;
+        if (!a.isMarked && b.isMarked) return -1;
+        return b.totalCount - a.totalCount;
+      });
+    }
     return summaries;
   },
   
-  // Clear all inventory data
   clearAll() {
     localStorage.setItem('minibarInventory', JSON.stringify({}));
     localStorage.setItem('markedRooms', JSON.stringify([]));
+    return true;
+  },
+  
+  exportInventory() {
+    const allInventory = this.getAllInventory();
+    const markedRooms = this.getMarkedRooms();
+    const exportData = [];
+    
+    Object.keys(allInventory).forEach(roomNumber => {
+      const roomInventory = allInventory[roomNumber];
+      const products = roomInventory.products || {};
+      const productList = [];
+      
+      Object.keys(products)
+        .sort((a, b) => parseInt(a) - parseInt(b))
+        .forEach(productId => {
+          const product = products[productId];
+          if (product.count > 0) {
+            productList.push(`${product.count} ${product.name}`);
+          }
+        });
+      
+      if (productList.length > 0) {
+        exportData.push({
+          room: roomNumber,
+          products: productList.join(', '),
+          marked: markedRooms.includes(roomNumber),
+          date: roomInventory.lastUpdated || new Date().toISOString()
+        });
+      }
+    });
+    
+    const csvContent = [
+      ['Room', 'Products', 'Marked', 'Date'],
+      ...exportData.map(item => [
+        item.room,
+        item.products,
+        item.marked ? 'Yes' : 'No',
+        new Date(item.date).toLocaleDateString('ka-GE')
+      ])
+    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `minibar_inventory_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
     return true;
   }
 };
@@ -387,17 +537,20 @@ const InventoryManager = {
 document.addEventListener('DOMContentLoaded', function() {
   const inventoryList = document.getElementById('inventoryList');
   const clearButton = document.getElementById('clearButton');
+  const exportButton = document.getElementById('exportButton');
+  const sortButton = document.getElementById('sortButton');
   const roomCount = document.getElementById('roomCount');
+  const totalItems = document.getElementById('totalItems');
   
-  // Swipe detection variables
-  let touchStartX = 0;
-  let touchEndX = 0;
-  let currentSwipeItem = null;
-  const swipeThreshold = 100; // Minimum swipe distance for green mark
-  const swipeCancelThreshold = 30; // Cancel if swipe is too small
+  let currentSort = localStorage.getItem('inventorySort') || 'time';
+  const sortMethods = ['time', 'room', 'products'];
+  let sortIndex = sortMethods.indexOf(currentSort);
+  
+  updateSortButton();
   
   function loadInventory() {
-    const summaries = InventoryManager.getAllRoomsSummary();
+    const result = InventoryManager.getAllRoomsSummary(currentSort);
+    const { summaries, totalProducts } = result;
     inventoryList.innerHTML = '';
     
     if (summaries.length === 0) {
@@ -407,131 +560,105 @@ document.addEventListener('DOMContentLoaded', function() {
           <p>შედი ოთახში და შეამოწმე</p>
         </div>
       `;
-      roomCount.textContent = 'Rooms: 0';
+      roomCount.textContent = 'ოთახები: 0';
+      totalItems.textContent = 'სულ პროდუქტები: 0';
       return;
     }
     
-    roomCount.textContent = `Rooms: ${summaries.length}`;
+    roomCount.textContent = `ოთახები: ${summaries.length}`;
+    totalItems.textContent = `სულ პროდუქტები: ${totalProducts}`;
     
     summaries.forEach(item => {
       const roomItem = document.createElement('div');
       roomItem.className = `inventory-room-item ${item.isMarked ? 'green' : ''}`;
       roomItem.setAttribute('data-room', item.room);
       
+      const productItemsHTML = item.products.map(product => 
+        `<span class="product-item">${product.count} ${product.name}</span>`
+      ).join('');
+      
+      const lastUpdated = new Date(item.lastUpdated);
+      const timeAgo = getTimeAgo(lastUpdated);
+      
       roomItem.innerHTML = `
-        <div class="swipe-feedback">Mark as Green ✓</div>
+        <div class="swipe-feedback">${item.isMarked ? 'Unmark' : 'Mark as Green ✓'}</div>
         <div class="swipe-progress"></div>
         <div class="inventory-room-header">
           <span class="room-number">
             ${item.isMarked ? '<span class="checkmark">✓</span>' : ''}
-            Room ${item.room}
+            ოთახი ${item.room}
+            ${currentSort !== 'time' ? `<span class="sort-indicator">${getSortIndicator()}</span>` : ''}
           </span>
-          <span class="room-summary">${item.summary}</span>
+        </div>
+        <div class="room-summary">
+          <div class="product-list">
+            ${productItemsHTML}
+          </div>
+          <div class="last-updated">
+            🕒 ${timeAgo} • სულ: ${item.totalCount} პროდუქტი
+          </div>
         </div>
       `;
       
-      // Add touch events for swipe detection
-      roomItem.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
-        currentSwipeItem = roomItem;
-        roomItem.classList.add('swiping');
-      });
-      
-      roomItem.addEventListener('touchmove', (e) => {
-        if (currentSwipeItem !== roomItem) return;
-        
-        touchEndX = e.touches[0].clientX;
-        const swipeDistance = touchEndX - touchStartX;
-        
-        // Calculate swipe progress (0% to 100%)
-        const progress = Math.min(Math.max(swipeDistance / swipeThreshold, 0), 1);
-        
-        // Update progress bar
-        const progressBar = roomItem.querySelector('.swipe-progress');
-        progressBar.style.width = `${progress * 100}%`;
-        
-        // Update visual feedback
-        if (swipeDistance > swipeCancelThreshold) {
-          roomItem.style.transform = `translateX(${Math.min(swipeDistance * 0.5, 50)}px)`;
-        }
-      });
-      
-      roomItem.addEventListener('touchend', (e) => {
-        if (currentSwipeItem !== roomItem) return;
-        
-        touchEndX = e.changedTouches[0].clientX;
-        const swipeDistance = touchEndX - touchStartX;
-        
-        // Reset item position
-        roomItem.classList.remove('swiping');
-        roomItem.style.transform = '';
-        
-        // Reset progress bar
-        const progressBar = roomItem.querySelector('.swipe-progress');
-        progressBar.style.width = '0%';
-        
-        // Handle swipe right (green mark)
-        if (swipeDistance > swipeThreshold) {
-          handleSwipeRight(item.room, roomItem);
-        }
-        
-        currentSwipeItem = null;
-      });
-      
-      // Also support mouse events for desktop testing
-      roomItem.addEventListener('mousedown', (e) => {
-        touchStartX = e.clientX;
-        currentSwipeItem = roomItem;
-        roomItem.classList.add('swiping');
-      });
-      
-      roomItem.addEventListener('mousemove', (e) => {
-        if (currentSwipeItem !== roomItem || e.buttons !== 1) return;
-        
-        touchEndX = e.clientX;
-        const swipeDistance = touchEndX - touchStartX;
-        
-        // Calculate swipe progress
-        const progress = Math.min(Math.max(swipeDistance / swipeThreshold, 0), 1);
-        
-        // Update progress bar
-        const progressBar = roomItem.querySelector('.swipe-progress');
-        progressBar.style.width = `${progress * 100}%`;
-        
-        // Update visual feedback
-        if (swipeDistance > swipeCancelThreshold) {
-          roomItem.style.transform = `translateX(${Math.min(swipeDistance * 0.5, 50)}px)`;
-        }
-      });
-      
-      roomItem.addEventListener('mouseup', (e) => {
-        if (currentSwipeItem !== roomItem) return;
-        
-        touchEndX = e.clientX;
-        const swipeDistance = touchEndX - touchStartX;
-        
-        // Reset item position
-        roomItem.classList.remove('swiping');
-        roomItem.style.transform = '';
-        
-        // Reset progress bar
-        const progressBar = roomItem.querySelector('.swipe-progress');
-        progressBar.style.width = '0%';
-        
-        // Handle swipe right (green mark)
-        if (swipeDistance > swipeThreshold) {
-          handleSwipeRight(item.room, roomItem);
-        }
-        
-        currentSwipeItem = null;
-      });
-      
-      // Prevent default drag behavior
-      roomItem.addEventListener('dragstart', (e) => {
-        e.preventDefault();
-      });
-      
+      addSwipeEvents(roomItem, item.room);
       inventoryList.appendChild(roomItem);
+    });
+  }
+  
+  function getSortIndicator() {
+    switch(currentSort) {
+      case 'room': return 'ოთახი';
+      case 'products': return 'რაოდენობა';
+      default: return '';
+    }
+  }
+  
+  function getTimeAgo(date) {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'ახლა';
+    if (diffMins < 60) return `${diffMins} წუთის წინ`;
+    if (diffHours < 24) return `${diffHours} საათის წინ`;
+    if (diffDays < 7) return `${diffDays} დღის წინ`;
+    return date.toLocaleDateString('ka-GE');
+  }
+  
+  function addSwipeEvents(roomItem, roomNumber) {
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    roomItem.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      roomItem.classList.add('swiping');
+    });
+    
+    roomItem.addEventListener('touchmove', (e) => {
+      touchEndX = e.touches[0].clientX;
+      const swipeDistance = touchEndX - touchStartX;
+      const progress = Math.min(Math.max(swipeDistance / 100, 0), 1);
+      const progressBar = roomItem.querySelector('.swipe-progress');
+      progressBar.style.width = `${progress * 100}%`;
+      
+      if (swipeDistance > 30) {
+        roomItem.style.transform = `translateX(${Math.min(swipeDistance * 0.5, 50)}px)`;
+      }
+    });
+    
+    roomItem.addEventListener('touchend', () => {
+      const swipeDistance = touchEndX - touchStartX;
+      roomItem.classList.remove('swiping');
+      roomItem.style.transform = '';
+      
+      const progressBar = roomItem.querySelector('.swipe-progress');
+      progressBar.style.width = '0%';
+      
+      if (swipeDistance > 100) {
+        handleSwipeRight(roomNumber, roomItem);
+      }
     });
   }
   
@@ -539,62 +666,59 @@ document.addEventListener('DOMContentLoaded', function() {
     const isCurrentlyMarked = InventoryManager.isRoomMarked(roomNumber);
     
     if (isCurrentlyMarked) {
-      // If already green, unmark it
       InventoryManager.unmarkRoom(roomNumber);
       roomElement.classList.remove('green');
-      
-      // Show notification
-      showNotification(`Room ${roomNumber} unmarked`, '#3b82f6');
+      showNotification(`ოთახი ${roomNumber} მოხსნილია`, '#3b82f6');
     } else {
-      // Mark as green
       InventoryManager.markRoom(roomNumber);
       roomElement.classList.add('green');
-      
-      // Show success notification with animation
-      showNotification(`Room ${roomNumber} marked as green ✓`, '#10b981');
-      
-      // Add a subtle animation
-      roomElement.style.animation = 'none';
-      setTimeout(() => {
-        roomElement.style.animation = 'pulseGreen 0.5s ease';
-      }, 10);
+      showNotification(`ოთახი ${roomNumber} მონიშნულია ✓`, '#10b981');
     }
     
-    // Update the checkmark visibility
-    updateRoomItemVisuals(roomNumber, roomElement);
+    setTimeout(() => {
+      loadInventory();
+    }, 300);
   }
   
-  function updateRoomItemVisuals(roomNumber, roomElement) {
-    const isMarked = InventoryManager.isRoomMarked(roomNumber);
-    const roomNumberSpan = roomElement.querySelector('.room-number');
-    
-    if (isMarked) {
-      roomNumberSpan.innerHTML = `<span class="checkmark">✓</span> Room ${roomNumber}`;
-    } else {
-      roomNumberSpan.innerHTML = `Room ${roomNumber}`;
-    }
+  function updateSortButton() {
+    const sortNames = {
+      'time': 'დრო ⏰',
+      'room': 'ოთახი 🔢', 
+      'products': 'რაოდენობ 📊'
+    };
+    sortButton.textContent = `დალაგება: ${sortNames[currentSort]}`;
   }
   
-  // Add CSS animation for green pulse
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes pulseGreen {
-      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-    }
-  `;
-  document.head.appendChild(style);
+  function cycleSortMethod() {
+    sortIndex = (sortIndex + 1) % sortMethods.length;
+    currentSort = sortMethods[sortIndex];
+    localStorage.setItem('inventorySort', currentSort);
+    updateSortButton();
+    loadInventory();
+    showNotification(`დალაგება: ${getSortName(currentSort)}`, '#8b5cf6');
+  }
+  
+  function getSortName(method) {
+    const names = {
+      'time': 'დრო',
+      'room': 'ოთახის ნომერი',
+      'products': 'პროდუქტების რაოდენობა'
+    };
+    return names[method] || method;
+  }
   
   function showNotification(message, color = '#10b981') {
-    // Create notification element
+    const existingNotification = document.querySelector('.custom-notification');
+    if (existingNotification) existingNotification.remove();
+    
     const notification = document.createElement('div');
+    notification.className = 'custom-notification';
     notification.style.cssText = `
       position: fixed;
       top: 80px;
       right: 20px;
       background: ${color}20;
-      color: ${color === '#10b981' ? '#a7f3d0' : '#bfdbfe'};
+      color: ${color === '#10b981' ? '#a7f3d0' : '#e9d5ff'};
       padding: 12px 20px;
       border-radius: 8px;
       border: 2px solid ${color}60;
@@ -603,37 +727,14 @@ document.addEventListener('DOMContentLoaded', function() {
       font-weight: bold;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       animation: slideIn 0.3s ease;
-      backdrop-filter: blur(10px);
     `;
-    
-    // Add animation keyframes if not already added
-    if (!document.querySelector('#notification-styles')) {
-      const notificationStyle = document.createElement('style');
-      notificationStyle.id = 'notification-styles';
-      notificationStyle.textContent = `
-        @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-          from { transform: translateX(0); opacity: 1; }
-          to { transform: translateX(100%); opacity: 0; }
-        }
-      `;
-      document.head.appendChild(notificationStyle);
-    }
     
     notification.textContent = message;
     document.body.appendChild(notification);
     
-    // Remove notification after 2 seconds
     setTimeout(() => {
       notification.style.animation = 'slideOut 0.3s ease';
-      setTimeout(() => {
-        if (notification.parentNode) {
-          document.body.removeChild(notification);
-        }
-      }, 300);
+      setTimeout(() => notification.remove(), 300);
     }, 2000);
   }
   
@@ -645,13 +746,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  // Load inventory on page load
-  loadInventory();
+  exportButton.addEventListener('click', () => {
+    InventoryManager.exportInventory();
+    showNotification('ინვენტარი ექსპორტირებულია', '#3b82f6');
+  });
   
-  // Auto-refresh inventory every 10 seconds
-  setInterval(() => {
-    loadInventory();
-  }, 10000);
+  sortButton.addEventListener('click', cycleSortMethod);
+  
+  loadInventory();
+  setInterval(loadInventory, 10000);
 });
 </script>
 

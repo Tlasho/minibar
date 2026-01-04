@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minibar - სულ პროდუქტები</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #0b0f1a;
+  color: #e5e7eb;
+}
+
+.totals-page {
+  padding: 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0b0f1a 0%, #1e293b 100%);
+}
+
+.totals-container {
+  max-width: 800px;
+  margin: 60px auto 0;
+  background: rgba(15, 23, 42, 0.9);
+  padding: 30px;
+  border-radius: 16px;
+  border: 2px solid #475569;
+}
+
+.totals-title {
+  color: #e5e7eb;
+  font-size: 32px;
+  margin-bottom: 30px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.totals-controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.print-button, .back-button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.print-button {
+  background: #3b82f6;
+  color: white;
+}
+
+.print-button:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.back-button {
+  background: #6b7280;
+  color: white;
+}
+
+.back-button:hover {
+  background: #4b5563;
+  transform: translateY(-2px);
+}
+
+.totals-list {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 12px;
+  padding: 20px;
+  min-height: 300px;
+}
+
+.totals-category {
+  margin-bottom: 30px;
+}
+
+.category-title {
+  color: #60a5fa;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #475569;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.totals-item {
+  background: rgba(15, 23, 42, 0.8);
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  border: 1px solid #475569;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.totals-item:hover {
+  background: rgba(30, 41, 59, 0.9);
+  transform: translateY(-2px);
+}
+
+.product-name {
+  color: #e5e7eb;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.product-count {
+  background: #10b981;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  min-width: 60px;
+  text-align: center;
+}
+
+.product-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid #475569;
+}
+
+.empty-totals {
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+}
+
+.summary-box {
+  background: rgba(16, 185, 129, 0.15);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 30px;
+  text-align: center;
+}
+
+.summary-title {
+  color: #10b981;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.summary-total {
+  color: #e5e7eb;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.back-arrow {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-size: 18px;
+  color: #e5e7eb;
+  cursor: pointer;
+  background: rgba(30, 41, 59, 0.8);
+  padding: 10px 15px;
+  border-radius: 12px;
+  border: 2px solid #475569;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  z-index: 100;
+  text-decoration: none;
+}
+
+.back-arrow:hover {
+  background: rgba(51, 65, 85, 0.9);
+  transform: translateX(-3px);
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .totals-page {
+    padding: 0;
+    background: white;
+  }
+  
+  .totals-container {
+    border: none;
+    box-shadow: none;
+    background: white;
+    margin: 0;
+    padding: 20px;
+  }
+  
+  .back-arrow,
+  .print-button,
+  .back-button {
+    display: none;
+  }
+  
+  .totals-item {
+    border: 1px solid #ddd;
+    background: white;
+    color: black;
+  }
+  
+  .product-name {
+    color: black;
+  }
+  
+  .product-count {
+    background: #10b981;
+    color: white;
+  }
+}
+
+@media (max-width: 768px) {
+  .totals-container {
+    margin-top: 80px;
+    padding: 20px;
+  }
+  
+  .totals-title {
+    font-size: 24px;
+  }
+  
+  .product-name {
+    font-size: 14px;
+  }
+  
+  .product-count {
+    font-size: 16px;
+    min-width: 50px;
+  }
+  
+  .back-arrow {
+    top: 15px;
+    left: 15px;
+    padding: 8px 12px;
+  }
+}
+</style>
+</head>
+
+<body class="totals-page">
+
+<a href="inventory.html" class="back-arrow">← უკან</a>
+
+<div class="totals-container">
+  <h1 class="totals-title">📊 სულ პროდუქტები</h1>
+  
+  <div class="totals-controls">
+    <button class="print-button" id="printButton">🖨️ ამობეჭდვა</button>
+    <button class="back-button" onclick="window.location.href='inventory.html'">📋 ინვენტარი</button>
+  </div>
+  
+  <div class="totals-list" id="totalsList">
+    <!-- Totals will be loaded here -->
+  </div>
+  
+  <div class="summary-box" id="summaryBox" style="display: none;">
+    <div class="summary-title">ჯამური რაოდენობა</div>
+    <div class="summary-total" id="summaryTotal">0</div>
+  </div>
+</div>
+
+<script>
+// Product database with categories
+const productDatabase = {
+  'above': [
+    { id: 1, name: "Cola", image: "https://product.hstatic.net/1000282430/product/nuoc-ngot-coca-cola-nhat-500ml_f61289e9a50d41398d9711800846f9b0_grande.jpg" },
+    { id: 2, name: "Redbull", image: "https://images.europroduct.ge/prod/7d1a791158/9a46837c83b04917aa53b2e5af25aed2_90376504.jpg?w=580" },
+    { id: 3, name: "Chips", image: "https://m.media-amazon.com/images/I/61w6Gc8ox6L.jpg" },
+    { id: 4, name: "Nuts", image: "https://cdn.2nabiji.ge/products/mitsis-thkhili-ola-mokhaluli-mariliani-300x300.webp" },
+    { id: 5, name: "Honey", image: "https://www.trubeehoney.com/cdn/shop/products/MINI_1024x1024.jpg?v=1620842945" }
+  ],
+  
+  'below': [
+    { id: 7, name: "Water", image: "https://www.aversi.ge/uploads/matimg/293a37597e5b2ad1120984e131d7e82a.jpg" },
+    { id: 8, name: "Heineken", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfFQEReT42FKmj-5xxd6fmHEZhzop7IYXzsw&s" },
+    { id: 9, name: "Fruit Juice", image: "https://nikorasupermarket.ge/modules/current_promotions/uploads/16794.png" },
+    { id: 10, name: "nabeghlavi", image: "https://imagedelivery.net/d_EE26O5eWcJDRYn-qMBOg/3084d5f4-c3ec-40f4-05f5-c31c8cda5200/public" },
+    { id: 11, name: "Tsinandali", image: "https://8000vintages.ge/images/thumbnails/1200/1800/detailed/18/keburia_tsinandali_2022.png" },
+    { id: 12, name: "Khvanchkara", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROcYIQbB-ZZSjivKhrV9qU3yTMucHdBEobAg&s" },
+    { id: 13, name: "Saperavi", image: "https://8000vintages.ge/images/thumbnails/1200/1800/detailed/18/keburia_saperavi_2022.png" },
+    { id: 14, name: "Chacha", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1a0_3_lMeP_ps2j3oViU4CPpWHBrTlsiIHA&s" }
+  ],
+
+  'door-1': [
+    { id: 30, name: "Rafaelo", image: "https://www.axonprofil.de/static/items/520/17264_1.jpg" },
+    { id: 31, name: "M&M", image: "https://kcc.org.hk/wp-content/uploads/2023/09/MM20Chocolate20Peanut2037g.jpg" },
+    { id: 32, name: "Snickers", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSWZJpdqkpCmCBkEby1N1Sh0PeYbFvI8f7Ag&s" }
+  ],
+  
+  'door-2': [
+    { id: 40, name: "Jameson", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzDOSSfqZfk056iMhz4Td1WpL6cglxeq9mLQ&s" },
+    { id: 41, name: "Finlandia", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2FeIzqvdhrRBCn1h18oijS9aurvuXndz7nA&s" },
+    { id: 42, name: "Johnnie Walker", image: "https://www.raschvin.com/wp-content/uploads/2022/05/rSL000843.jpg" },
+    { id: 43, name: "Henessy", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1tipPf_0i53dVnnKwP0p2LwCVBHmlNwcbhg&s" },
+    { id: 44, name: "Jack Daniels", image: "https://www.cebooze.com/app/uploads/2021/08/Jack-Daniel-Mini.jpg" },
+    { id: 45, name: "Sarajishvili", image: "https://winetime.com.ua/storage/fab93e692c41c3ac030b6c147b5eed12.jpeg" }
+  ]
+};
+
+// Casino products
+const casinoProducts = {
+  'below': [
+    { id: 15, name: "moet", image: "https://cdn11.bigcommerce.com/s-9hu30/images/stencil/2048x2048/products/482/2416/moet_and_chandon_brut_imperial_187ml_mini_split__85900.1637085078.jpg?c=2" }
+  ],
+  'door-2': [
+    { id: 46, name: "glen moray", image: "https://www.astorwines.com/images/items/01024.jpg" }
+  ]
+};
+
+// Casino room numbers
+const casinoRooms = [103, 105, 112, 203, 205, 212, 313, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410];
+
+document.addEventListener('DOMContentLoaded', function() {
+  const totalsList = document.getElementById('totalsList');
+  const printButton = document.getElementById('printButton');
+  const summaryBox = document.getElementById('summaryBox');
+  const summaryTotal = document.getElementById('summaryTotal');
+  
+  function loadTotals() {
+    const allInventory = getAllInventory();
+    const totals = calculateTotals(allInventory);
+    
+    if (Object.keys(totals).length === 0) {
+      totalsList.innerHTML = `
+        <div class="empty-totals">
+          <p>ჯერჯერობით არ დაგიმატებია პროდუქტები</p>
+          <p>შედი ოთახში და დაამატე პროდუქტები</p>
+        </div>
+      `;
+      summaryBox.style.display = 'none';
+      return;
+    }
+    
+    totalsList.innerHTML = '';
+    let grandTotal = 0;
+    
+    // Create category sections
+    const categories = [
+      { id: 'above', title: 'ზედა თარო' },
+      { id: 'below', title: 'ქვედა თარო' },
+      { id: 'door-1', title: 'კარის თარო 1' },
+      { id: 'door-2', title: 'კარის თარო 2' }
+    ];
+    
+    categories.forEach(category => {
+      const categoryProducts = productDatabase[category.id] || [];
+      const categoryTotals = [];
+      let categoryTotal = 0;
+      
+      // Calculate totals for this category
+      categoryProducts.forEach(product => {
+        const total = totals[product.id] || 0;
+        if (total > 0) {
+          categoryTotals.push({ ...product, total });
+          categoryTotal += total;
+        }
+      });
+      
+      // Add casino products to relevant categories
+      if (casinoProducts[category.id]) {
+        casinoProducts[category.id].forEach(product => {
+          const total = totals[product.id] || 0;
+          if (total > 0) {
+            categoryTotals.push({ ...product, total });
+            categoryTotal += total;
+          }
+        });
+      }
+      
+      if (categoryTotals.length > 0) {
+        grandTotal += categoryTotal;
+        
+        const categoryElement = document.createElement('div');
+        categoryElement.className = 'totals-category';
+        
+        // Sort products by count (highest first)
+        categoryTotals.sort((a, b) => b.total - a.total);
+        
+        const itemsHTML = categoryTotals.map(item => `
+          <div class="totals-item">
+            <div class="product-name">
+              <img src="${item.image}" alt="${item.name}" class="product-image">
+              <span>${item.name}</span>
+            </div>
+            <div class="product-count">${item.total}</div>
+          </div>
+        `).join('');
+        
+        categoryElement.innerHTML = `
+          <div class="category-title">
+            <span>${category.title}</span>
+            <span style="font-size: 14px; color: #94a3b8;">(სულ: ${categoryTotal})</span>
+          </div>
+          ${itemsHTML}
+        `;
+        
+        totalsList.appendChild(categoryElement);
+      }
+    });
+    
+    // Show summary box
+    if (grandTotal > 0) {
+      summaryTotal.textContent = grandTotal;
+      summaryBox.style.display = 'block';
+    } else {
+      summaryBox.style.display = 'none';
+    }
+  }
+  
+  function getAllInventory() {
+    const inventory = localStorage.getItem('minibarInventory');
+    return inventory ? JSON.parse(inventory) : {};
+  }
+  
+  function calculateTotals(allInventory) {
+    const totals = {};
+    
+    Object.values(allInventory).forEach(room => {
+      if (room.products) {
+        Object.entries(room.products).forEach(([productId, product]) => {
+          const id = parseInt(productId);
+          totals[id] = (totals[id] || 0) + product.count;
+        });
+      }
+    });
+    
+    return totals;
+  }
+  
+  printButton.addEventListener('click', function() {
+    window.print();
+  });
+  
+  // Load totals on page load
+  loadTotals();
+  
+  // Auto-refresh every 10 seconds
+  setInterval(loadTotals, 10000);
+});
+</script>
+
+</body>
+</html>

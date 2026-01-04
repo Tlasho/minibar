@@ -285,9 +285,17 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   border: 2px solid #475569;
   z-index: 150;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.5s ease;
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.room-display.show {
+  opacity: 1;
+  visibility: visible;
 }
 
 .casino-badge {
@@ -323,6 +331,7 @@ body {
   gap: 8px;
 }
 
+
 .done-button.show {
   opacity: 1;
   visibility: visible;
@@ -332,9 +341,6 @@ body {
   background: #059669;
   transform: translateY(-2px);
 }
-
-/* Rest of minibar CSS from previous version... */
-/* (Include all the minibar CSS from previous answer here) */
 
 /* Center container */
 .center-container {
@@ -474,13 +480,406 @@ body {
   top:14px;
   bottom:14px;
   left:14px;
- right:14px;
+  right:14px;
   border:2px solid #9ca3af;
 }
 
 /* door shelves - only on the inside (door-back) */
+/* door shelves - only on the inside (door-back) */
 .door-shelf{
   position:absolute;
-  left:6}
+  left:6px;
+  right:6px;
+  height:2px;
+  background:#e5e7eb;
+  transition: all .7s ease;
+  pointer-events: none; /* Lines are not clickable */
+  cursor: default; /* Lines are not clickable */
+}
+.totals-button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #10b981;
+  color: white;
+}
 
+.totals-button:hover {
+  background: #059669;
+  transform: translateY(-2px);
+}
+
+/* TWO VISUAL LINES in the middle of each shelf area */
+.door-shelf.one{ 
+  top: 32.5%; /* Between 25% and 40% */
+}    
+.door-shelf.two{ 
+  top: 82.5%; /* Between 75% and 90% */
+}
+
+/* Door shelf AREAS (clickable areas where shelves actually are) */
+.door-shelf-area {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  cursor: pointer;
+  z-index: 3;
+  transition: background-color 0.3s ease;
+  pointer-events: none;
+  background-color: transparent;
+}
+
+.minibar.open .door-shelf-area {
+  pointer-events: auto;
+}
+
+.minibar.open .door-shelf-area:hover {
+  background-color: rgba(96, 165, 250, 0.1);
+}
+
+/* First shelf area (25% to 40%) */
+.door-shelf-area.first {
+  top: 25%;
+  bottom: calc(100% - 40%);
+}
+
+/* Second shelf area (75% to 90%) */
+.door-shelf-area.second {
+  top: 75%;
+  bottom: calc(100% - 90%);
+}
+
+.minibar.open .door-shelf-area:hover {
+  background-color: rgba(96, 165, 250, 0.1);
+}
+
+/* First shelf area (between lines 1-2: 25% to 40%) */
+.door-shelf-area.first {
+  top: 25%;
+  bottom: calc(100% - 40%);
+}
+
+/* Second shelf area (between lines 3-4: 75% to 90%) */
+.door-shelf-area.second {
+  top: 75%;
+  bottom: calc(100% - 90%);
+}
+
+/* CLOSED - entire box is centered (no transform) */
+.minibar:not(.open) {
+  transform: translateX(0);
+}
+
+/* OPEN - left side of box is centered (move left by half width) */
+.minibar.open {
+  transform: translateX(75px); /* Half of 150px */
+}
+
+.minibar.open .door{
+  transform:rotateY(-150deg);
+}
+
+/* SETTINGS MENU */
+.settings-menu {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 300;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.settings-menu.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.products-open .settings-menu {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.settings-button {
+  background: rgba(30, 41, 59, 0.8);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid #475569;
+  color: #e5e7eb;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+
+.settings-button:hover {
+  background: rgba(51, 65, 85, 0.9);
+  transform: scale(1.1);
+}
+
+.settings-panel {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  background: rgba(15, 23, 42, 0.95);
+  border-radius: 12px;
+  padding: 15px;
+  min-width: 200px;
+  border: 2px solid #475569;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.settings-panel.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.settings-item {
+  padding: 10px;
+  color: #e5e7eb;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-item:hover {
+  background: rgba(51, 65, 85, 0.7);
+}
+
+/* BACK ARROW (minibar page) */
+.back-arrow {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-size: 32px;
+  color: #e5e7eb;
+  cursor: pointer;
+  z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  background: rgba(30, 41, 59, 0.8);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border: 2px solid #475569;
+}
+
+.back-arrow:hover {
+  background: rgba(51, 65, 85, 0.9);
+  transform: scale(1.1);
+}
+
+.back-arrow.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Shelf background */
+.shelf-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(2, 6, 23, 0.95);
+  opacity: 0;
+  visibility: hidden;
+  transition: all .7s ease;
+  z-index: 90;
+}
+
+.shelf-background.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* PRODUCTS CONTAINER */
+.products-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.7s ease;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 100px 20px 80px;
+  gap: 25px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Individual product - FLEXIBLE HEIGHT */
+.product {
+  width: 180px;
+  min-height: 50px;
+  background: transparent;
+  border-radius: 12px;
+  overflow: visible;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.product:hover {
+  transform: scale(1.02);
+}
+
+/* Product name ABOVE the image */
+.product-name {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px 4px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border: 1px solid #475569;
+  min-height: 40px;
+}
+
+/* Product image - ORIGINAL SIZE */
+.product-image {
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  border: 2px solid #475569;
+  background: rgba(30, 41, 59, 0.9);
+}
+
+/* Quantity counter on product */
+.product-quantity {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #3b82f6;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  border: 2px solid #1d4ed8;
+  z-index: 10;
+}
+
+/* FIXED: SHOW PRODUCTS WHEN SHELF IS FOCUSED */
+.above-focused .products-container,
+.below-focused .products-container,
+.shelf-1-door-focused .products-container,
+.shelf-2-door-focused .products-container {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+    width: 100%;
+  }
   
+  .login-container {
+    padding: 30px 20px;
+  }
+  
+  .login-title {
+    font-size: 24px;
+  }
+  
+  .room-display {
+    font-size: 20px;
+    padding: 8px 16px;
+    top: 15px;
+  }
+  
+  .done-button {
+    top: 15px;
+    right: 15px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+  
+  .settings-button {
+    width: 45px;
+    height: 45px;
+  }
+  
+  /* Make products fit screen */
+  .product {
+    width: 160px;
+  }
+  
+  .product-name {
+    font-size: 14px;
+    padding: 6px 4px;
+    min-height: 35px;
+  }
+  
+  .product-image {
+    max-width: 160px;
+  }
+  
+  /* Center products with proper spacing */
+  .products-container {
+    padding-top: 90px;
+    padding-bottom: 90px;
+    padding-left: 10px;
+    padding-right: 10px;
+    gap: 20px;
+  }
+  
+  /* Add invisible space at bottom */
+  .products-container::after {
+    content: '';
+    height: 40px;
+    width: 100%;
+    flex-shrink: 0;
+    visibility: hidden;
+  }
+}

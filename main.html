@@ -478,9 +478,9 @@ body{
 /* door shelves - only on the inside (door-back) */
 .door-shelf{
   position:absolute;
-  left:6px;
-  right:6px;
-  height:2px;
+  left:1px;
+  right:1px;
+  height:35px;
   background:#e5e7eb;
   transition: all .7s ease;
   cursor: default;
@@ -493,10 +493,12 @@ body{
 }
 
 /* TWO SHELVES on the door - between lines 1-2 and 3-4 */
-.door-shelf.one{ 
+.door-shelf.one{
   top: 32.5%; /* Between 25% and 40% = (25+40)/2 = 32.5% */
 }    
+
 .door-shelf.two{ 
+  height: 40px;
   top: 82.5%; /* Between 75% and 90% = (75+90)/2 = 82.5% */
 }    
 
@@ -732,11 +734,16 @@ body{
     <input type="text" 
            class="room-input" 
            id="roomInput" 
-           placeholder="(მგ. 101)"
-           maxlength="3"
+           placeholder="(მგ. 101 ან 2201)"
+           maxlength="4"
            autofocus>
     
     <button class="login-button" id="loginButton">შესვლა</button>
+    <div style="margin-top: 25px;">
+  <a href="minus.html" style="display: block; padding: 12px 20px; background: #ef4444; color: white; text-decoration: none; border-radius: 12px; border: 2px solid #000000; font-size: 17px; text-align: center; font-weight: bold;">
+    მინუსები
+  </a>
+</div>
     
     <div class="error-message" id="errorMessage"></div>
     
@@ -746,14 +753,14 @@ body{
       <div>მეორე: 201-224</div>
       <div>მესამე: 301-324</div>
       <div>მეოთხე: 401-410</div>
+      <div>პირველი(ძვ): 2201-2214</div>
+      <div>მეორე(ძვ): 3301-3314</div>
       <div style="margin-top: 10px; color: #fbbf24;">კაზინოს ოთახები: 103, 105, 112, 203, 205, 212, 313, 401-410</div>
     </div>
     
-    <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #475569;">
-  <a href="inventory.html" class="view-inventory-link" style="display: block; text-decoration: none; width: 100%;">
-    📋 შევსება
-  </a>
-</div>
+    <a href="inventory.html" style="display: block; padding: 12px 12px; background: #157e3e; color: white; text-decoration: none; border-radius: 12px; border: 2px solid #000000; font-size: 17px; text-align: center; font-weight: bold;">
+  შევსება
+</a>
   </div>
 </div>
 
@@ -951,7 +958,9 @@ const validRanges = [
   { start: 101, end: 124 },
   { start: 201, end: 224 },
   { start: 301, end: 324 },
-  { start: 401, end: 410 }
+  { start: 401, end: 410 },
+  { start: 2201, end: 2214},
+  { start: 3301, end: 3314},
 ];
 
 // PRODUCTS DATA with max counts
@@ -961,14 +970,14 @@ const baseProducts = {
     { id: 2, name: "Redbull", image: "https://images.europroduct.ge/prod/7d1a791158/9a46837c83b04917aa53b2e5af25aed2_90376504.jpg?w=580", maxCount: 1 },
     { id: 3, name: "Chips", image: "https://m.media-amazon.com/images/I/61w6Gc8ox6L.jpg", maxCount: 1 },
     { id: 4, name: "Nuts", image: "https://cdn.2nabiji.ge/products/mitsis-thkhili-ola-mokhaluli-mariliani-300x300.webp", maxCount: 1 },
-    { id: 5, name: "Honey", image: "https://www.trubeehoney.com/cdn/shop/products/MINI_1024x1024.jpg?v=1620842945", maxCount: 1 },
+    { id: 5, name: "Honey", image: "https://www.trubeehoney.com/cdn/shop/products/MINI_1024x1024.jpg?v=1620842945", maxCount: 2 },
   ],
   
   'below': [
     { id: 7, name: "Water", image: "https://www.aversi.ge/uploads/matimg/293a37597e5b2ad1120984e131d7e82a.jpg", maxCount: 2 },
     { id: 8, name: "Heineken", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfFQEReT42FKmj-5xxd6fmHEZhzop7IYXzsw&s", maxCount: 2 },
-    { id: 9, name: "Fruit Juice", image: "https://nikorasupermarket.ge/modules/current_promotions/uploads/16794.png", maxCount: 1 },
-    { id: 10, name: "Campa", image: "https://imagedelivery.net/d_EE26O5eWcJDRYn-qMBOg/3084d5f4-c3ec-40f4-05f5-c31c8cda5200/public", maxCount: 2 },
+    { id: 9, name: "Fruit Juice", image: "https://nikorasupermarket.ge/modules/current_promotions/uploads/16794.png", maxCount: 2 },
+    { id: 10, name: "nabeghlavi", image: "https://imagedelivery.net/d_EE26O5eWcJDRYn-qMBOg/3084d5f4-c3ec-40f4-05f5-c31c8cda5200/public", maxCount: 1 },
     { id: 11, name: "Tsinandali", image: "https://8000vintages.ge/images/thumbnails/1200/1800/detailed/18/keburia_tsinandali_2022.png", maxCount: 1 },
     { id: 12, name: "Khvanchkara", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROcYIQbB-ZZSjivKhrV9qU3yTMucHdBEobAg&s", maxCount: 1 },
     { id: 13, name: "Saperavi", image: "https://8000vintages.ge/images/thumbnails/1200/1800/detailed/18/keburia_saperavi_2022.png", maxCount: 1 },
@@ -976,8 +985,8 @@ const baseProducts = {
   ],
 
   'door-1': [
-    { id: 30, name: "M&M", image: "https://kcc.org.hk/wp-content/uploads/2023/09/MM20Chocolate20Peanut2037g.jpg", maxCount: 1 },
-    { id: 31, name: "Rafaelo", image: "https://www.axonprofil.de/static/items/520/17264_1.jpg", maxCount: 3 },
+    { id: 30, name: "Rafaelo", image: "https://www.axonprofil.de/static/items/520/17264_1.jpg", maxCount: 3 },
+    { id: 31, name: "M&M", image: "https://kcc.org.hk/wp-content/uploads/2023/09/MM20Chocolate20Peanut2037g.jpg", maxCount: 1 },
     { id: 32, name: "Snickers", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSWZJpdqkpCmCBkEby1N1Sh0PeYbFvI8f7Ag&s", maxCount: 1 }
   ],
   
@@ -987,7 +996,7 @@ const baseProducts = {
     { id: 42, name: "Johnnie Walker", image: "https://www.raschvin.com/wp-content/uploads/2022/05/rSL000843.jpg", maxCount: 1 },
     { id: 43, name: "Henessy", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1tipPf_0i53dVnnKwP0p2LwCVBHmlNwcbhg&s", maxCount: 1 },
     { id: 44, name: "Jack Daniels", image: "https://www.cebooze.com/app/uploads/2021/08/Jack-Daniel-Mini.jpg", maxCount: 1 },
-    { id: 45, name: "Sarajishvili", image: "https://www.raschvin.com/wp-content/uploads/2022/05/rSL000843.jpg", maxCount: 1 },
+    { id: 45, name: "Sarajishvili", image: "https://winetime.com.ua/storage/fab93e692c41c3ac030b6c147b5eed12.jpeg", maxCount: 1 },
   ]
 };
 
@@ -1009,10 +1018,16 @@ let currentShelfId = null;
 let areProductsOpen = false;
 
 // FUNCTIONS
+// FUNCTIONS
 function validateRoomNumber(roomNumber) {
   const roomNum = parseInt(roomNumber);
   
-  if (isNaN(roomNum) || roomNumber.length !== 3) {
+  if (isNaN(roomNum)) {
+    return false;
+  }
+  
+  // Accept both 3-digit and 4-digit numbers
+  if (roomNumber.length !== 3 && roomNumber.length !== 4) {
     return false;
   }
   
