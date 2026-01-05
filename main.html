@@ -987,25 +987,57 @@ const InventoryManager = {
   },
   
   // Get all rooms summary
-  getAllRoomsSummary() {
-    const allInventory = this.getAllInventory();
-    const summaries = [];
+  // Update the InventoryManager.getAllRoomsSummary() function:
+
+// Get all rooms summary
+getAllRoomsSummary() {
+  const allInventory = this.getAllInventory();
+  const summaries = [];
+  
+  Object.keys(allInventory).forEach(roomNumber => {
+    const roomInventory = allInventory[roomNumber];
+    const summaryItems = [];
     
-    Object.keys(allInventory).forEach(roomNumber => {
-      const summary = this.getRoomSummary(roomNumber);
-      if (summary !== 'No items taken') {
-        summaries.push({
-          room: roomNumber,
-          summary: summary
-        });
+    // Add minibar products
+    Object.keys(roomInventory.products).forEach(productId => {
+      const product = roomInventory.products[productId];
+      // Check if it's a charger/cable (IDs 100, 101) or other product
+      if (parseInt(productId) === CHARGER_ID || parseInt(productId) === CABLE_ID) {
+        // Add charger/cable items
+        summaryItems.push(`${product.count} ${product.name}`);
+      } else if (product.count > 0) {
+        // Add regular minibar products (only if count > 0)
+        summaryItems.push(`${product.count} ${product.name}`);
       }
     });
     
-    // Sort by room number
-    summaries.sort((a, b) => parseInt(a.room) - parseInt(b.room));
-    
-    return summaries;
-  }
+    if (summaryItems.length > 0) {
+      summaries.push({
+        room: roomNumber,
+        summary: summaryItems.join(', ')
+      });
+    }
+  });
+  
+  // Sort by room number
+  summaries.sort((a, b) => parseInt(a.room) - parseInt(b.room));
+  
+  return summaries;
+},
+
+// Also update getRoomSummary() function:
+getRoomSummary(roomNumber) {
+  const roomInventory = this.getRoomInventory(roomNumber);
+  const summary = [];
+  
+  Object.keys(roomInventory.products).forEach(productId => {
+    const product = roomInventory.products[productId];
+    // Include ALL products (including chargers)
+    summary.push(`${product.count} ${product.name}`);
+  });
+  
+  return summary.length > 0 ? summary.join(', ') : 'No items taken';
+},
 };
 
 // Initialize inventory
