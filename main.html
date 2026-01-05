@@ -21,6 +21,78 @@ body{
   overflow: hidden;
 }
 
+/* CHARGER/CABLE BUTTONS */
+.charger-buttons-container {
+  position: absolute;
+  top: 160px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  z-index: 50;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.5s ease;
+  pointer-events: none;
+}
+
+.charger-buttons-container.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.charger-btn {
+  background: rgba(30, 41, 59, 0.9);
+  border: 2px solid #475569;
+  color: #e5e7eb;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  min-width: 160px;
+  justify-content: center;
+}
+
+.charger-btn:hover {
+  background: rgba(51, 65, 85, 0.9);
+  transform: translateY(-2px);
+}
+
+.charger-btn:active {
+  transform: translateY(0);
+}
+
+.charger-btn.taken {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+
+.charger-btn span:first-child {
+  font-size: 20px;
+}
+
+@media (max-width: 768px) {
+  .charger-buttons-container {
+    top: 140px;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .charger-btn {
+    min-width: 140px;
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+}
+
 /* SETTINGS MENU - Hidden by default, only show on minibar page when no products open */
 .settings-menu {
   position: fixed;
@@ -714,6 +786,18 @@ body{
 
 <body>
 
+<!-- CHARGER/CABLE BUTTONS -->
+<div class="charger-buttons-container" id="chargerButtons">
+  <button class="charger-btn" id="chargerBtn">
+    <span>🔌</span>
+    <span>Charger</span>
+  </button>
+  <button class="charger-btn" id="cableBtn">
+    <span>🔗</span>
+    <span>Charging Cable</span>
+  </button>
+</div>
+
 <!-- SETTINGS MENU -->
 <div class="settings-menu" id="settingsMenu">
   <div class="settings-button" id="settingsButton">⋮</div>
@@ -946,7 +1030,13 @@ const settingsMenu = document.getElementById("settingsMenu");
 const settingsButton = document.getElementById("settingsButton");
 const settingsPanel = document.getElementById("settingsPanel");
 const viewInventory = document.getElementById("viewInventory");
-const clearAll = document.getElementById("clearAll");
+const chargerButtons = document.getElementById("chargerButtons");
+const chargerBtn = document.getElementById("chargerBtn");
+const cableBtn = document.getElementById("cableBtn");
+
+// Charger product IDs
+const CHARGER_ID = 100;
+const CABLE_ID = 101;
 
 // Casino room numbers
 const casinoRooms = [103, 105, 112, 203, 205, 212, 313];
@@ -1018,7 +1108,38 @@ let currentShelfId = null;
 let areProductsOpen = false;
 
 // FUNCTIONS
-// FUNCTIONS
+function showChargerButtons() {
+  chargerButtons.classList.add('show');
+  updateChargerButtonStates();
+}
+
+function hideChargerButtons() {
+  chargerButtons.classList.remove('show');
+}
+
+function updateChargerButtonStates() {
+  const chargerCount = InventoryManager.getProductCount(currentRoom, CHARGER_ID);
+  const cableCount = InventoryManager.getProductCount(currentRoom, CABLE_ID);
+  
+  // Update charger button
+  if (chargerCount > 0) {
+    chargerBtn.classList.add('taken');
+    chargerBtn.innerHTML = `<span>🔌</span><span>Charger (${chargerCount})</span>`;
+  } else {
+    chargerBtn.classList.remove('taken');
+    chargerBtn.innerHTML = `<span>🔌</span><span>Charger</span>`;
+  }
+  
+  // Update cable button
+  if (cableCount > 0) {
+    cableBtn.classList.add('taken');
+    cableBtn.innerHTML = `<span>🔗</span><span>Cable (${cableCount})</span>`;
+  } else {
+    cableBtn.classList.remove('taken');
+    cableBtn.innerHTML = `<span>🔗</span><span>Charging Cable</span>`;
+  }
+}
+
 function validateRoomNumber(roomNumber) {
   const roomNum = parseInt(roomNumber);
   
@@ -1066,6 +1187,9 @@ function getProductsForRoom(roomNumber, shelfId) {
 }
 
 function showProducts(shelfId) {
+  // Hide charger buttons when products are open
+  hideChargerButtons();
+  
   // Hide settings menu when products are open
   settingsMenu.classList.remove('visible');
   document.body.classList.add('products-open');
@@ -1172,6 +1296,9 @@ function showMinibar() {
   backArrow.classList.add('visible');
   doneButton.classList.remove('show');
   
+  // Show charger buttons
+  showChargerButtons();
+  
   setTimeout(() => {
     bar.classList.add('open');
   }, 500);
@@ -1189,6 +1316,9 @@ function showError(message) {
 }
 
 function closeProducts() {
+  // Show charger buttons again
+  showChargerButtons();
+  
   // Show settings menu again
   settingsMenu.classList.add('visible');
   document.body.classList.remove('products-open');
@@ -1217,6 +1347,9 @@ function logout() {
   doneButton.classList.remove('show');
   settingsMenu.classList.remove('visible');
   document.body.classList.remove('products-open');
+  
+  // Hide charger buttons
+  hideChargerButtons();
   
   currentRoom = null;
   isCasinoRoom = false;
@@ -1314,6 +1447,35 @@ document.querySelectorAll('.door-shelf').forEach(shelf => {
         break;
     }
   });
+});
+
+// Charger button click handlers
+chargerBtn.addEventListener('click', () => {
+  let currentCount = InventoryManager.getProductCount(currentRoom, CHARGER_ID);
+  
+  // Toggle between 0 and 1
+  if (currentCount < 1) {
+    currentCount = 1;
+  } else {
+    currentCount = 0;
+  }
+  
+  InventoryManager.updateProductCount(currentRoom, CHARGER_ID, "Charger", currentCount);
+  updateChargerButtonStates();
+});
+
+cableBtn.addEventListener('click', () => {
+  let currentCount = InventoryManager.getProductCount(currentRoom, CABLE_ID);
+  
+  // Toggle between 0 and 1
+  if (currentCount < 1) {
+    currentCount = 1;
+  } else {
+    currentCount = 0;
+  }
+  
+  InventoryManager.updateProductCount(currentRoom, CABLE_ID, "Charging Cable", currentCount);
+  updateChargerButtonStates();
 });
 
 doneButton.addEventListener('click', () => {
