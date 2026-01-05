@@ -24,7 +24,7 @@ body{
 /* CHARGER/CABLE BUTTONS */
 .charger-buttons-container {
   position: absolute;
-  top: 120px;
+  top: 100px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -34,6 +34,7 @@ body{
   visibility: hidden;
   transition: all 0.5s ease;
   pointer-events: none;
+  flex-direction: row;
 }
 
 .charger-buttons-container.show {
@@ -46,9 +47,9 @@ body{
   background: rgba(30, 41, 59, 0.9);
   border: 2px solid #475569;
   color: #e5e7eb;
-  padding: 15px 20px;
+  padding: 8px 100px;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: 10px;
   font-weight: bold;
   cursor: pointer;
   display: flex;
@@ -56,7 +57,7 @@ body{
   gap: 10px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  min-width: 160px;
+  min-width: 120px;
   justify-content: center;
 }
 
@@ -82,7 +83,7 @@ body{
 @media (max-width: 768px) {
   .charger-buttons-container {
     top: 140px;
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
   }
   
@@ -789,11 +790,9 @@ body{
 <!-- CHARGER/CABLE BUTTONS -->
 <div class="charger-buttons-container" id="chargerButtons">
   <button class="charger-btn" id="chargerBtn">
-    <span>🔌</span>
     <span>Charger</span>
   </button>
   <button class="charger-btn" id="cableBtn">
-    <span>🔗</span>
     <span>Charging Cable</span>
   </button>
 </div>
