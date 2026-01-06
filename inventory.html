@@ -111,6 +111,7 @@ body {
   user-select: none;
   position: relative;
   overflow: hidden;
+  transform-origin: center;
 }
 
 .inventory-room-item::before {
@@ -120,13 +121,18 @@ body {
   left: 0;
   width: 0;
   height: 100%;
-  background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.3) 100%);
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.3) 100%);
   transition: width 0.3s ease;
   z-index: 1;
 }
 
-.inventory-room-item.swiping::before {
+.inventory-room-item.swiping-red::before {
   width: 100%;
+}
+
+.inventory-room-item.swiping-green::before {
+  width: 100%;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.3) 100%);
 }
 
 .inventory-room-item.green {
@@ -150,6 +156,26 @@ body {
   transform: scale(1);
 }
 
+.inventory-room-item.red {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+}
+
+.inventory-room-item.red .room-number {
+  color: #fca5a5;
+  font-weight: bold;
+}
+
+.inventory-room-item.red .room-summary {
+  color: #fecaca;
+}
+
+.inventory-room-item.red .checkmark {
+  opacity: 1;
+  transform: scale(1);
+}
+
 .inventory-room-header {
   display: flex;
   justify-content: space-between;
@@ -164,6 +190,8 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  position: relative;
+  z-index: 2;
 }
 
 .checkmark {
@@ -178,6 +206,8 @@ body {
   color: #cbd5e1;
   font-size: 16px;
   width: 100%;
+  position: relative;
+  z-index: 2;
 }
 
 .product-list {
@@ -194,6 +224,8 @@ body {
   border: 1px solid #475569;
   font-size: 14px;
   color: #cbd5e1;
+  position: relative;
+  z-index: 2;
 }
 
 .no-inventory {
@@ -270,9 +302,20 @@ body {
   pointer-events: none;
 }
 
-.inventory-room-item.swiping .swipe-feedback {
+.swipe-feedback.red {
+  color: #ef4444;
+}
+
+.inventory-room-item.swiping-red .swipe-feedback {
   opacity: 1;
   transform: translateX(0);
+  color: #ef4444;
+}
+
+.inventory-room-item.swiping-green .swipe-feedback {
+  opacity: 1;
+  transform: translateX(0);
+  color: #10b981;
 }
 
 .swipe-progress {
@@ -280,10 +323,23 @@ body {
   bottom: 0;
   left: 0;
   height: 3px;
-  background: #10b981;
+  background: #ef4444;
   border-radius: 0 0 12px 12px;
   width: 0%;
   transition: width 0.2s ease;
+}
+
+.inventory-room-item.swiping-green .swipe-progress {
+  background: #10b981;
+}
+
+.swipe-info {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 12px;
+  color: #94a3b8;
+  z-index: 2;
 }
 
 .total-items {
@@ -295,6 +351,7 @@ body {
   font-size: 14px;
   margin-top: 15px;
   text-align: center;
+  cursor: pointer;
 }
 
 .last-updated {
@@ -345,6 +402,38 @@ body {
     font-size: 12px;
   }
 }
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.pulse {
+  animation: pulse 0.3s ease;
+}
 </style>
 </head>
 
@@ -356,10 +445,7 @@ body {
 
 <div class="inventory-container">
   <h1 class="inventory-title">📋 შევსება</h1>
-  
-  <div class="swipe-hint">
-    გაუსვი მარჯვნივ ოთახს
-  </div>
+
   
   <div class="inventory-controls">
     <button class="clear-button" id="clearButton">გასუფთავება</button>
@@ -373,6 +459,7 @@ body {
   
   <div class="total-items" onclick="window.location.href='totals.html'" id="totalItems">სულ პროდუქტები: 0</div>
 </div>
+
 <script>
 const InventoryManager = {
   getAllInventory() {
@@ -385,33 +472,79 @@ const InventoryManager = {
     return markedRooms ? JSON.parse(markedRooms) : [];
   },
   
-  markRoom(roomNumber) {
-    const markedRooms = this.getMarkedRooms();
-    if (!markedRooms.includes(roomNumber)) {
-      markedRooms.push(roomNumber);
-      localStorage.setItem('markedRooms', JSON.stringify(markedRooms));
+  getRedRooms() {
+    const redRooms = localStorage.getItem('redRooms');
+    return redRooms ? JSON.parse(redRooms) : [];
+  },
+  
+  markRoom(roomNumber, type = 'green') {
+    if (type === 'green') {
+      // Add to green rooms, remove from red
+      const markedRooms = this.getMarkedRooms();
+      const redRooms = this.getRedRooms();
+      
+      if (!markedRooms.includes(roomNumber)) {
+        markedRooms.push(roomNumber);
+        localStorage.setItem('markedRooms', JSON.stringify(markedRooms));
+      }
+      
+      const redIndex = redRooms.indexOf(roomNumber);
+      if (redIndex > -1) {
+        redRooms.splice(redIndex, 1);
+        localStorage.setItem('redRooms', JSON.stringify(redRooms));
+      }
+    } else if (type === 'red') {
+      // Add to red rooms, remove from green
+      const redRooms = this.getRedRooms();
+      const markedRooms = this.getMarkedRooms();
+      
+      if (!redRooms.includes(roomNumber)) {
+        redRooms.push(roomNumber);
+        localStorage.setItem('redRooms', JSON.stringify(redRooms));
+      }
+      
+      const greenIndex = markedRooms.indexOf(roomNumber);
+      if (greenIndex > -1) {
+        markedRooms.splice(greenIndex, 1);
+        localStorage.setItem('markedRooms', JSON.stringify(markedRooms));
+      }
     }
     return true;
   },
   
   unmarkRoom(roomNumber) {
+    // Remove from both green and red
     const markedRooms = this.getMarkedRooms();
-    const index = markedRooms.indexOf(roomNumber);
-    if (index > -1) {
-      markedRooms.splice(index, 1);
+    const redRooms = this.getRedRooms();
+    
+    const greenIndex = markedRooms.indexOf(roomNumber);
+    if (greenIndex > -1) {
+      markedRooms.splice(greenIndex, 1);
       localStorage.setItem('markedRooms', JSON.stringify(markedRooms));
     }
+    
+    const redIndex = redRooms.indexOf(roomNumber);
+    if (redIndex > -1) {
+      redRooms.splice(redIndex, 1);
+      localStorage.setItem('redRooms', JSON.stringify(redRooms));
+    }
+    
     return true;
   },
   
   isRoomMarked(roomNumber) {
     const markedRooms = this.getMarkedRooms();
-    return markedRooms.includes(roomNumber);
+    const redRooms = this.getRedRooms();
+    
+    if (markedRooms.includes(roomNumber)) return 'green';
+    if (redRooms.includes(roomNumber)) return 'red';
+    return false;
   },
   
-  getAllRoomsSummary(sortBy = 'time') {
+  getAllRoomsSummary(sortBy = 'date') {
     const allInventory = this.getAllInventory();
     const markedRooms = this.getMarkedRooms();
+    const redRooms = this.getRedRooms();
     const summaries = [];
     let totalProducts = 0;
     
@@ -436,11 +569,16 @@ const InventoryManager = {
       
       if (productItems.length > 0) {
         totalProducts += roomProductCount;
+        
+        let status = 'none';
+        if (markedRooms.includes(roomNumber)) status = 'green';
+        else if (redRooms.includes(roomNumber)) status = 'red';
+        
         summaries.push({
           room: roomNumber,
           products: productItems,
           totalCount: roomProductCount,
-          isMarked: markedRooms.includes(roomNumber),
+          status: status,
           lastUpdated: roomInventory.lastUpdated || new Date().toISOString(),
           timestamp: new Date(roomInventory.lastUpdated || new Date()).getTime()
         });
@@ -457,18 +595,34 @@ const InventoryManager = {
   },
   
   sortSummaries(summaries, sortBy) {
-    if (sortBy === 'time') {
+    if (sortBy === 'date') {
       return summaries.sort((a, b) => {
-        if (a.isMarked && !b.isMarked) return 1;
-        if (!a.isMarked && b.isMarked) return -1;
+        // Put marked rooms at the BOTTOM (green then red, then none on top)
+        const statusOrder = { 'none': 0, 'red': 1, 'green': 2 };
+        if (statusOrder[a.status] !== statusOrder[b.status]) {
+          return statusOrder[a.status] - statusOrder[b.status];
+        }
+        // Then sort by timestamp (newest first)
         return b.timestamp - a.timestamp;
       });
     } else if (sortBy === 'room') {
-      return summaries.sort((a, b) => parseInt(a.room) - parseInt(b.room));
+      return summaries.sort((a, b) => {
+        // Put marked rooms at the BOTTOM
+        const statusOrder = { 'none': 0, 'red': 1, 'green': 2 };
+        if (statusOrder[a.status] !== statusOrder[b.status]) {
+          return statusOrder[a.status] - statusOrder[b.status];
+        }
+        // Then sort by room number
+        return parseInt(a.room) - parseInt(b.room);
+      });
     } else if (sortBy === 'products') {
       return summaries.sort((a, b) => {
-        if (a.isMarked && !b.isMarked) return 1;
-        if (!a.isMarked && b.isMarked) return -1;
+        // Put marked rooms at the BOTTOM
+        const statusOrder = { 'none': 0, 'red': 1, 'green': 2 };
+        if (statusOrder[a.status] !== statusOrder[b.status]) {
+          return statusOrder[a.status] - statusOrder[b.status];
+        }
+        // Then sort by product count (highest first)
         return b.totalCount - a.totalCount;
       });
     }
@@ -478,12 +632,14 @@ const InventoryManager = {
   clearAll() {
     localStorage.setItem('minibarInventory', JSON.stringify({}));
     localStorage.setItem('markedRooms', JSON.stringify([]));
+    localStorage.setItem('redRooms', JSON.stringify([]));
     return true;
   },
   
   exportInventory() {
     const allInventory = this.getAllInventory();
     const markedRooms = this.getMarkedRooms();
+    const redRooms = this.getRedRooms();
     const exportData = [];
     
     Object.keys(allInventory).forEach(roomNumber => {
@@ -501,21 +657,25 @@ const InventoryManager = {
         });
       
       if (productList.length > 0) {
+        let status = 'None';
+        if (markedRooms.includes(roomNumber)) status = 'Green';
+        else if (redRooms.includes(roomNumber)) status = 'Red';
+        
         exportData.push({
           room: roomNumber,
           products: productList.join(', '),
-          marked: markedRooms.includes(roomNumber),
+          status: status,
           date: roomInventory.lastUpdated || new Date().toISOString()
         });
       }
     });
     
     const csvContent = [
-      ['Room', 'Products', 'Marked', 'Date'],
+      ['Room', 'Products', 'Status', 'Date'],
       ...exportData.map(item => [
         item.room,
         item.products,
-        item.marked ? 'Yes' : 'No',
+        item.status,
         new Date(item.date).toLocaleDateString('ka-GE')
       ])
     ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
@@ -542,8 +702,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const roomCount = document.getElementById('roomCount');
   const totalItems = document.getElementById('totalItems');
   
-  let currentSort = localStorage.getItem('inventorySort') || 'time';
-  const sortMethods = ['time', 'room', 'products'];
+  // Default sort is 'date' (not 'time')
+  let currentSort = localStorage.getItem('inventorySort') || 'date';
+  const sortMethods = ['date', 'room', 'products']; // Changed order
   let sortIndex = sortMethods.indexOf(currentSort);
   
   updateSortButton();
@@ -570,7 +731,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     summaries.forEach(item => {
       const roomItem = document.createElement('div');
-      roomItem.className = `inventory-room-item ${item.isMarked ? 'green' : ''}`;
+      const statusClass = item.status === 'green' ? 'green' : item.status === 'red' ? 'red' : '';
+      roomItem.className = `inventory-room-item ${statusClass}`;
       roomItem.setAttribute('data-room', item.room);
       
       const productItemsHTML = item.products.map(product => 
@@ -580,14 +742,16 @@ document.addEventListener('DOMContentLoaded', function() {
       const lastUpdated = new Date(item.lastUpdated);
       const timeAgo = getTimeAgo(lastUpdated);
       
+      let feedbackText = '';
+      
       roomItem.innerHTML = `
-        <div class="swipe-feedback">${item.isMarked ? 'Unmark' : 'Mark as Green ✓'}</div>
+        <div class="swipe-feedback">${feedbackText}</div>
         <div class="swipe-progress"></div>
         <div class="inventory-room-header">
           <span class="room-number">
-            ${item.isMarked ? '<span class="checkmark">✓</span>' : ''}
+            ${item.status === 'green' ? '<span class="checkmark">✓</span>' : ''}
             ოთახი ${item.room}
-            ${currentSort !== 'time' ? `<span class="sort-indicator">${getSortIndicator()}</span>` : ''}
+            ${currentSort !== 'date' ? `<span class="sort-indicator">${getSortIndicator()}</span>` : ''}
           </span>
         </div>
         <div class="room-summary">
@@ -609,6 +773,7 @@ document.addEventListener('DOMContentLoaded', function() {
     switch(currentSort) {
       case 'room': return 'ოთახი';
       case 'products': return 'რაოდენობა';
+      case 'date': return 'თარიღი';
       default: return '';
     }
   }
@@ -630,61 +795,159 @@ document.addEventListener('DOMContentLoaded', function() {
   function addSwipeEvents(roomItem, roomNumber) {
     let touchStartX = 0;
     let touchEndX = 0;
+    let touchStartY = 0;
+    let touchEndY = 0;
+    let touchStartTime = 0;
+    let isSwiping = false;
+    let swipeType = null;
     
     roomItem.addEventListener('touchstart', (e) => {
       touchStartX = e.touches[0].clientX;
-      roomItem.classList.add('swiping');
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+      isSwiping = false;
+      e.preventDefault();
     });
     
     roomItem.addEventListener('touchmove', (e) => {
-      touchEndX = e.touches[0].clientX;
-      const swipeDistance = touchEndX - touchStartX;
-      const progress = Math.min(Math.max(swipeDistance / 100, 0), 1);
-      const progressBar = roomItem.querySelector('.swipe-progress');
-      progressBar.style.width = `${progress * 100}%`;
+      if (!touchStartX) return;
       
-      if (swipeDistance > 30) {
-        roomItem.style.transform = `translateX(${Math.min(swipeDistance * 0.5, 50)}px)`;
+      touchEndX = e.touches[0].clientX;
+      touchEndY = e.touches[0].clientY;
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+      
+      // Check if it's a horizontal swipe (not vertical scroll)
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+        isSwiping = true;
+        e.preventDefault();
+        
+        const currentStatus = InventoryManager.isRoomMarked(roomNumber);
+        
+        if (deltaX > 0) {
+          // Swipe right
+          if (currentStatus === 'green') {
+            swipeType = 'green';
+            roomItem.classList.remove('swiping-red');
+            roomItem.classList.add('swiping-green');
+          } else {
+            swipeType = 'red';
+            roomItem.classList.remove('swiping-green');
+            roomItem.classList.add('swiping-red');
+          }
+          
+          const progress = Math.min(Math.abs(deltaX) / 150, 1);
+          const progressBar = roomItem.querySelector('.swipe-progress');
+          progressBar.style.width = `${progress * 100}%`;
+          
+          roomItem.style.transform = `translateX(${Math.min(deltaX * 0.5, 75)}px)`;
+        } else {
+          // Swipe left
+          swipeType = 'undo';
+          roomItem.classList.remove('swiping-red', 'swiping-green');
+          
+          const progress = Math.min(Math.abs(deltaX) / 150, 1);
+          const progressBar = roomItem.querySelector('.swipe-progress');
+          progressBar.style.width = `${progress * 100}%`;
+          progressBar.style.background = '#94a3b8';
+          
+          roomItem.style.transform = `translateX(${Math.max(deltaX * 0.5, -75)}px)`;
+        }
       }
     });
     
-    roomItem.addEventListener('touchend', () => {
-      const swipeDistance = touchEndX - touchStartX;
-      roomItem.classList.remove('swiping');
+    roomItem.addEventListener('touchend', (e) => {
+      if (!touchStartX) return;
+      
+      const touchDuration = Date.now() - touchStartTime;
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+      const isTap = touchDuration < 250 && Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10;
+      
+      // Reset styles
+      roomItem.classList.remove('swiping-red', 'swiping-green');
       roomItem.style.transform = '';
       
       const progressBar = roomItem.querySelector('.swipe-progress');
       progressBar.style.width = '0%';
+      progressBar.style.background = '';
       
-      if (swipeDistance > 100) {
-        handleSwipeRight(roomNumber, roomItem);
+      // Handle swipe if it was a significant horizontal swipe
+      if (isSwiping && Math.abs(deltaX) > 100) {
+        e.preventDefault();
+        
+        if (deltaX > 0) {
+          // Swipe right
+          const currentStatus = InventoryManager.isRoomMarked(roomNumber);
+          
+          if (currentStatus === 'green') {
+            // Already green, keep it green (no change)
+            roomItem.classList.add('pulse');
+            setTimeout(() => roomItem.classList.remove('pulse'), 300);
+            showNotification(`ოთახი ${roomNumber} უკვე მონიშნულია ✓`, '#10b981');
+          } else if (currentStatus === 'red') {
+            // Change from red to green
+            InventoryManager.markRoom(roomNumber, 'green');
+            roomItem.classList.remove('red');
+            roomItem.classList.add('green');
+            roomItem.classList.add('pulse');
+            setTimeout(() => roomItem.classList.remove('pulse'), 300);
+            showNotification(`ოთახი ${roomNumber} შევსებული და აღრიცხულია ✓`, '#10b981');
+          } else {
+            // No status, mark as red
+            InventoryManager.markRoom(roomNumber, 'red');
+            roomItem.classList.add('red');
+            roomItem.classList.add('pulse');
+            setTimeout(() => roomItem.classList.remove('pulse'), 300);
+            showNotification(`ოთახი ${roomNumber} შევსებულია`, '#ef4444');
+          }
+        } else if (deltaX < 0) {
+          // Swipe left - undo
+          const currentStatus = InventoryManager.isRoomMarked(roomNumber);
+          if (currentStatus) {
+            InventoryManager.unmarkRoom(roomNumber);
+            roomItem.classList.remove('green', 'red');
+            roomItem.classList.add('pulse');
+            setTimeout(() => roomItem.classList.remove('pulse'), 300);
+            showNotification(`ოთახი ${roomNumber} მოხსნილია`, '#3b82f6');
+          }
+        }
+        
+        setTimeout(() => {
+          loadInventory();
+        }, 500);
+      } else if (isTap) {
+        // It's a tap - do nothing
+        // Remove any existing click handlers
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      // Reset variables
+      touchStartX = 0;
+      touchStartY = 0;
+      touchEndX = 0;
+      touchEndY = 0;
+      touchStartTime = 0;
+      isSwiping = false;
+      swipeType = null;
+    });
+    
+    // Prevent click events on mobile
+    roomItem.addEventListener('click', (e) => {
+      // Only prevent clicks on mobile devices
+      if ('ontouchstart' in window || navigator.maxTouchPoints) {
+        e.preventDefault();
+        e.stopPropagation();
       }
     });
   }
   
-  function handleSwipeRight(roomNumber, roomElement) {
-    const isCurrentlyMarked = InventoryManager.isRoomMarked(roomNumber);
-    
-    if (isCurrentlyMarked) {
-      InventoryManager.unmarkRoom(roomNumber);
-      roomElement.classList.remove('green');
-      showNotification(`ოთახი ${roomNumber} მოხსნილია`, '#3b82f6');
-    } else {
-      InventoryManager.markRoom(roomNumber);
-      roomElement.classList.add('green');
-      showNotification(`ოთახი ${roomNumber} მონიშნულია ✓`, '#10b981');
-    }
-    
-    setTimeout(() => {
-      loadInventory();
-    }, 300);
-  }
-  
   function updateSortButton() {
     const sortNames = {
-      'time': 'დრო ⏰',
-      'room': 'ოთახი 🔢', 
-      'products': 'რაოდენობ 📊'
+      'date': 'თარიღი ',
+      'room': 'ოთახი ', 
+      'products': 'რაოდენობა '
     };
     sortButton.textContent = `დალაგება: ${sortNames[currentSort]}`;
   }
@@ -700,7 +963,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   function getSortName(method) {
     const names = {
-      'time': 'დრო',
+      'date': 'თარიღი',
       'room': 'ოთახის ნომერი',
       'products': 'პროდუქტების რაოდენობა'
     };
@@ -718,7 +981,7 @@ document.addEventListener('DOMContentLoaded', function() {
       top: 80px;
       right: 20px;
       background: ${color}20;
-      color: ${color === '#10b981' ? '#a7f3d0' : '#e9d5ff'};
+      color: ${color === '#10b981' ? '#a7f3d0' : color === '#ef4444' ? '#fecaca' : '#e9d5ff'};
       padding: 12px 20px;
       border-radius: 8px;
       border: 2px solid ${color}60;
