@@ -18,6 +18,8 @@ body{
   margin:0;
   font-family:Arial;
   overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
 }
 
 /* Improve touch responsiveness */
@@ -26,6 +28,7 @@ body{
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  touch-action: manipulation;
 }
 
 .product-quantity {
@@ -36,8 +39,10 @@ body{
 
 /* Improve scrolling performance */
 .products-container {
-  -webkit-overflow-scrolling: touch;
-  overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch !important;
+  overflow-scrolling: touch !important;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 /* UNSAVED CHANGES MESSAGE */
@@ -678,6 +683,11 @@ body{
   transform: scale(1.02);
 }
 
+.product:active {
+  opacity: 0.7;
+  transition: opacity 0.1s;
+}
+
 /* Product name ABOVE the image */
 .product-name {
   width: 100%;
@@ -1175,6 +1185,8 @@ let currentShelfId = null;
 let areProductsOpen = false;
 let unsavedChanges = {}; // Store unsaved changes
 let currentProductCounts = {}; // Track current counts for the session
+let isScrolling = false;
+let scrollTimer = null;
 
 // FUNCTIONS
 function showChargerButtons() {
@@ -1370,10 +1382,9 @@ function createProductElement(product) {
   const MIN_CLICK_INTERVAL = 50; // 50ms minimum between clicks (FAST!)
   
   const handleProductInteraction = (e) => {
-    // Prevent default for touch events to avoid zoom
-    if (e.type === 'touchstart' || e.type === 'touchend') {
-      e.preventDefault();
-      e.stopPropagation();
+    // Check if user is scrolling
+    if (isScrolling) {
+      return;
     }
     
     // Prevent multiple rapid clicks too close together
@@ -1404,7 +1415,7 @@ function createProductElement(product) {
   
   // Add multiple event listeners for maximum compatibility
   productElement.addEventListener('click', handleProductInteraction);
-  productElement.addEventListener('touchstart', handleProductInteraction, { passive: false });
+  productElement.addEventListener('touchstart', handleProductInteraction, { passive: true });
   
   // Prevent context menu on long press
   productElement.addEventListener('contextmenu', (e) => {
@@ -1762,6 +1773,31 @@ viewInventory.addEventListener('click', () => {
   window.location.href = 'inventory.html';
 });
 
+// Add scrolling detection
+productsContainer.addEventListener('touchstart', () => {
+  isScrolling = false;
+}, { passive: true });
+
+productsContainer.addEventListener('touchmove', () => {
+  isScrolling = true;
+  // Clear any existing timer
+  if (scrollTimer) {
+    clearTimeout(scrollTimer);
+  }
+  // Set a timer to reset isScrolling after movement stops
+  scrollTimer = setTimeout(() => {
+    isScrolling = false;
+  }, 150);
+}, { passive: true });
+
+productsContainer.addEventListener('touchend', () => {
+  // Clear the timer when touch ends
+  if (scrollTimer) {
+    clearTimeout(scrollTimer);
+    scrollTimer = null;
+  }
+}, { passive: true });
+
 // Add this function to restore state when returning from inventory
 function checkForReturnFromInventory() {
   const lastRoomState = localStorage.getItem('lastRoomState');
@@ -1788,50 +1824,44 @@ function checkForReturnFromInventory() {
   }
 }
 
-// Prevent iOS zoom and improve touch handling
+// Improved iOS touch handling
 document.addEventListener('DOMContentLoaded', function() {
-  // Prevent double-tap zoom
+  // Allow natural scrolling, only prevent zoom
   let lastTouchEnd = 0;
+  
+  // Only prevent double-tap zoom
   document.addEventListener('touchend', function(event) {
     const now = Date.now();
     if (now - lastTouchEnd <= 300) {
       event.preventDefault();
     }
     lastTouchEnd = now;
-  }, false);
+  }, { passive: false });
   
   // Prevent zoom gestures
   document.addEventListener('gesturestart', function(event) {
     event.preventDefault();
   });
   
-  // Prevent multiple touch zoom
-  document.addEventListener('touchstart', function(event) {
-    if (event.touches.length > 1) {
-      event.preventDefault();
-    }
-  }, { passive: false });
-  
-  // Disable pinch zoom
+  // Allow all touch events for scrolling
   document.addEventListener('touchmove', function(event) {
-    if (event.scale !== 1) {
-      event.preventDefault();
-    }
-  }, { passive: false });
+    // Allow all touchmove events for natural scrolling
+  }, { passive: true });
   
   // Focus input on load
   roomInput.focus();
   checkForReturnFromInventory();
 });
 
-// Add window load event to ensure everything is ready
+// Add window load event
 window.addEventListener('load', function() {
-  // Additional touch event prevention
-  document.addEventListener('touchmove', function(e) {
-    if (e.scale !== 1) {
-      e.preventDefault();
-    }
-  }, { passive: false });
+  // Improve touch scrolling
+  document.documentElement.style.webkitOverflowScrolling = 'touch';
+  
+  // Additional iOS optimizations
+  if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+    document.body.style.cursor = 'pointer'; // Improves touch response
+  }
 });
 </script>
 </body>
