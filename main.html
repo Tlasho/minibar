@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Minibar - Inventory System</title>
-<script src="nozoom.js"></script>
 <style>
 * {
   box-sizing: border-box;
@@ -19,6 +18,50 @@ body{
   margin:0;
   font-family:Arial;
   overflow: hidden;
+}
+
+/* Improve touch responsiveness */
+.product {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.product-quantity {
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Improve scrolling performance */
+.products-container {
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+}
+
+/* UNSAVED CHANGES MESSAGE */
+.unsaved-message {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 210;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border: 1px solid #dc2626;
+  white-space: nowrap;
+}
+
+.unsaved-message.show {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* CHARGER/CABLE BUTTONS */
@@ -331,11 +374,10 @@ body{
 }
 
 /* DONE BUTTON */
-/* DONE BUTTON - MOVED TO TOP RIGHT */
 .done-button {
   position: fixed;
   top: 20px;
-  right: 20px; /* Changed from right: 90px to 20px */
+  right: 20px;
   background: #10b981;
   color: white;
   border: none;
@@ -838,7 +880,8 @@ body{
       <div>მეოთხე: 401-410</div>
       <div>პირველი(ძვ): 2201-2214</div>
       <div>მეორე(ძვ): 3301-3314</div>
-      <div style="margin-top: 10px; color: #fbbf24;">კაზინოს ოთახები: 103, 105, 112, 203, 205, 212, 312, 401-410</div>
+      <div style="margin-top: 10px; color: #fbbf24;">კაზინოს ოთახები: 103, 105, 112, 203, 205, 212, 312, 401-410, 501-502</div>
+      <div style="margin-top: 10px; color: #60a5fa;">სამი მინიბარი: 501</div>
     </div>
     
     <a href="inventory.html" style="display: block; padding: 12px 12px; background: #157e3e; color: white; text-decoration: none; border-radius: 12px; border: 2px solid #000000; font-size: 17px; text-align: center; font-weight: bold;">
@@ -859,6 +902,9 @@ body{
   <span>✓</span>
   <span>Done</span>
 </button>
+
+<!-- UNSAVED CHANGES MESSAGE -->
+<div class="unsaved-message" id="unsavedMessage">ცვლილებები არ შენახულა</div>
 
 <div class="back-arrow" id="backArrow">←</div>
 <div class="shelf-background" id="shelfBackground"></div>
@@ -987,57 +1033,40 @@ const InventoryManager = {
   },
   
   // Get all rooms summary
-  // Update the InventoryManager.getAllRoomsSummary() function:
-
-// Get all rooms summary
-getAllRoomsSummary() {
-  const allInventory = this.getAllInventory();
-  const summaries = [];
-  
-  Object.keys(allInventory).forEach(roomNumber => {
-    const roomInventory = allInventory[roomNumber];
-    const summaryItems = [];
+  getAllRoomsSummary() {
+    const allInventory = this.getAllInventory();
+    const summaries = [];
     
-    // Add minibar products
-    Object.keys(roomInventory.products).forEach(productId => {
-      const product = roomInventory.products[productId];
-      // Check if it's a charger/cable (IDs 100, 101) or other product
-      if (parseInt(productId) === CHARGER_ID || parseInt(productId) === CABLE_ID) {
-        // Add charger/cable items
-        summaryItems.push(`${product.count} ${product.name}`);
-      } else if (product.count > 0) {
-        // Add regular minibar products (only if count > 0)
-        summaryItems.push(`${product.count} ${product.name}`);
+    Object.keys(allInventory).forEach(roomNumber => {
+      const roomInventory = allInventory[roomNumber];
+      const summaryItems = [];
+      
+      // Add minibar products
+      Object.keys(roomInventory.products).forEach(productId => {
+        const product = roomInventory.products[productId];
+        // Check if it's a charger/cable (IDs 100, 101) or other product
+        if (parseInt(productId) === CHARGER_ID || parseInt(productId) === CABLE_ID) {
+          // Add charger/cable items
+          summaryItems.push(`${product.count} ${product.name}`);
+        } else if (product.count > 0) {
+          // Add regular minibar products (only if count > 0)
+          summaryItems.push(`${product.count} ${product.name}`);
+        }
+      });
+      
+      if (summaryItems.length > 0) {
+        summaries.push({
+          room: roomNumber,
+          summary: summaryItems.join(', ')
+        });
       }
     });
     
-    if (summaryItems.length > 0) {
-      summaries.push({
-        room: roomNumber,
-        summary: summaryItems.join(', ')
-      });
-    }
-  });
-  
-  // Sort by room number
-  summaries.sort((a, b) => parseInt(a.room) - parseInt(b.room));
-  
-  return summaries;
-},
-
-// Also update getRoomSummary() function:
-getRoomSummary(roomNumber) {
-  const roomInventory = this.getRoomInventory(roomNumber);
-  const summary = [];
-  
-  Object.keys(roomInventory.products).forEach(productId => {
-    const product = roomInventory.products[productId];
-    // Include ALL products (including chargers)
-    summary.push(`${product.count} ${product.name}`);
-  });
-  
-  return summary.length > 0 ? summary.join(', ') : 'No items taken';
-},
+    // Sort by room number
+    summaries.sort((a, b) => parseInt(a.room) - parseInt(b.room));
+    
+    return summaries;
+  }
 };
 
 // Initialize inventory
@@ -1064,15 +1093,20 @@ const viewInventory = document.getElementById("viewInventory");
 const chargerButtons = document.getElementById("chargerButtons");
 const chargerBtn = document.getElementById("chargerBtn");
 const cableBtn = document.getElementById("cableBtn");
+const unsavedMessage = document.getElementById("unsavedMessage");
 
 // Charger product IDs
 const CHARGER_ID = 100;
 const CABLE_ID = 101;
 
-// Casino room numbers
-const casinoRooms = [103, 105, 112, 203, 205, 212, 312];
+// Casino room numbers - Updated to include 501-502
+const casinoRooms = [103, 105, 112, 203, 205, 212, 312, 501, 502];
 const casinoRangeStart = 401;
 const casinoRangeEnd = 410;
+
+// Room 501 has 3 minibars, 502 has 1 minibar
+const multiplierRooms = [501]; // Only 501 has 3 minibars
+const MINIBAR_MULTIPLIER = 3;
 
 // Room validation ranges
 const validRanges = [
@@ -1082,10 +1116,10 @@ const validRanges = [
   { start: 401, end: 410 },
   { start: 2201, end: 2214},
   { start: 3301, end: 3314},
-  { start: 501, end: 502},
+  { start: 501, end: 502}, // Added 501-502 range
 ];
 
-// PRODUCTS DATA with max counts
+// BASE PRODUCTS DATA (with original max counts)
 const baseProducts = {
   'above': [
     { id: 1, name: "Cola", image: "https://product.hstatic.net/1000282430/product/nuoc-ngot-coca-cola-nhat-500ml_f61289e9a50d41398d9711800846f9b0_grande.jpg", maxCount: 1 },
@@ -1122,7 +1156,7 @@ const baseProducts = {
   ]
 };
 
-// Casino-specific products
+// Casino-specific products (for ALL casino rooms including 501-502)
 const casinoExtraProducts = {
   'below': [
     { id: 15, name: "moet", image: "https://cdn11.bigcommerce.com/s-9hu30/images/stencil/2048x2048/products/482/2416/moet_and_chandon_brut_imperial_187ml_mini_split__85900.1637085078.jpg?c=2", maxCount: 1 }
@@ -1136,8 +1170,11 @@ const casinoExtraProducts = {
 // Current state
 let currentRoom = null;
 let isCasinoRoom = false;
+let isMultiplierRoom = false;
 let currentShelfId = null;
 let areProductsOpen = false;
+let unsavedChanges = {}; // Store unsaved changes
+let currentProductCounts = {}; // Track current counts for the session
 
 // FUNCTIONS
 function showChargerButtons() {
@@ -1196,10 +1233,12 @@ function validateRoomNumber(roomNumber) {
 function isCasinoRoomNumber(roomNumber) {
   const roomNum = parseInt(roomNumber);
   
+  // Check casino rooms array
   if (casinoRooms.includes(roomNum)) {
     return true;
   }
   
+  // Check casino range
   if (roomNum >= casinoRangeStart && roomNum <= casinoRangeEnd) {
     return true;
   }
@@ -1207,12 +1246,49 @@ function isCasinoRoomNumber(roomNumber) {
   return false;
 }
 
+function getOriginalMaxCount(productId) {
+  // Search through all products to find the original max count
+  for (const shelf in baseProducts) {
+    const product = baseProducts[shelf].find(p => p.id === productId);
+    if (product) return product.maxCount;
+  }
+  
+  for (const shelf in casinoExtraProducts) {
+    const product = casinoExtraProducts[shelf].find(p => p.id === productId);
+    if (product) return product.maxCount;
+  }
+  
+  return 1; // Default
+}
+
 function getProductsForRoom(roomNumber, shelfId) {
   const isCasino = isCasinoRoomNumber(roomNumber);
+  const isMultiplier = multiplierRooms.includes(parseInt(roomNumber));
+  
+  // Get base products
   let products = [...(baseProducts[shelfId] || [])];
   
+  // Apply multiplier for room 501 only
+  if (isMultiplier) {
+    products = products.map(product => ({
+      ...product,
+      maxCount: product.maxCount * MINIBAR_MULTIPLIER
+    }));
+  }
+  
+  // Add casino products for ALL casino rooms (including 501-502)
   if (isCasino && casinoExtraProducts[shelfId]) {
-    products = [...products, ...casinoExtraProducts[shelfId]];
+    let casinoProducts = [...casinoExtraProducts[shelfId]];
+    
+    // Apply multiplier for casino products too in room 501
+    if (isMultiplier) {
+      casinoProducts = casinoProducts.map(product => ({
+        ...product,
+        maxCount: product.maxCount * MINIBAR_MULTIPLIER
+      }));
+    }
+    
+    products = [...products, ...casinoProducts];
   }
   
   return products;
@@ -1225,6 +1301,9 @@ function showProducts(shelfId) {
   // Hide settings menu when products are open
   settingsMenu.classList.remove('visible');
   document.body.classList.add('products-open');
+  
+  // Reset unsaved changes for this shelf
+  unsavedChanges[shelfId] = {};
   
   productsContainer.innerHTML = '';
   currentShelfId = shelfId;
@@ -1266,8 +1345,19 @@ function createProductElement(product) {
   productElement.setAttribute('data-product-name', product.name);
   productElement.setAttribute('data-max-count', product.maxCount);
   
-  // Get current count from inventory
-  const currentCount = InventoryManager.getProductCount(currentRoom, product.id);
+  // Get current count from inventory (saved state)
+  const savedCount = InventoryManager.getProductCount(currentRoom, product.id);
+  
+  // Use unsaved changes if they exist, otherwise use saved count
+  const currentCount = (currentShelfId && unsavedChanges[currentShelfId] && unsavedChanges[currentShelfId][product.id] !== undefined) 
+    ? unsavedChanges[currentShelfId][product.id] 
+    : savedCount;
+  
+  // Store the current count
+  if (!unsavedChanges[currentShelfId]) {
+    unsavedChanges[currentShelfId] = {};
+  }
+  unsavedChanges[currentShelfId][product.id] = currentCount;
   
   productElement.innerHTML = `
     <div class="product-name">${product.name}</div>
@@ -1275,39 +1365,83 @@ function createProductElement(product) {
     ${currentCount > 0 ? `<div class="product-quantity">${currentCount}</div>` : ''}
   `;
   
-  productElement.addEventListener('click', () => {
-    handleProductClick(product.id, product.name, product.maxCount, productElement);
+  // Track click time to prevent iOS double-tap issues
+  let lastClickTime = 0;
+  const MIN_CLICK_INTERVAL = 50; // 50ms minimum between clicks (FAST!)
+  
+  const handleProductInteraction = (e) => {
+    // Prevent default for touch events to avoid zoom
+    if (e.type === 'touchstart' || e.type === 'touchend') {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // Prevent multiple rapid clicks too close together
+    const now = Date.now();
+    if (now - lastClickTime < MIN_CLICK_INTERVAL) {
+      return;
+    }
+    lastClickTime = now;
+    
+    // Get the current count from unsaved changes
+    let currentCount = unsavedChanges[currentShelfId][product.id] || 0;
+    
+    // Increment count (or reset to 0 if at max)
+    if (currentCount < product.maxCount) {
+      currentCount++;
+    } else {
+      currentCount = 0;
+    }
+    
+    // Store unsaved change
+    unsavedChanges[currentShelfId][product.id] = currentCount;
+    
+    // Update display immediately
+    updateProductDisplay(productElement, currentCount);
+    
+    return false;
+  };
+  
+  // Add multiple event listeners for maximum compatibility
+  productElement.addEventListener('click', handleProductInteraction);
+  productElement.addEventListener('touchstart', handleProductInteraction, { passive: false });
+  
+  // Prevent context menu on long press
+  productElement.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    return false;
   });
   
   return productElement;
 }
 
-function handleProductClick(productId, productName, maxCount, productElement) {
-  // Get current count
-  let currentCount = InventoryManager.getProductCount(currentRoom, productId);
+function updateProductDisplay(productElement, currentCount) {
+  const quantityElement = productElement.querySelector('.product-quantity');
   
-  // Increment count (or reset to 0 if at max)
-  if (currentCount < maxCount) {
-    currentCount++;
-  } else {
-    currentCount = 0;
+  // Remove any existing quantity element
+  if (quantityElement) {
+    quantityElement.remove();
   }
   
-  // Update in inventory
-  InventoryManager.updateProductCount(currentRoom, productId, productName, currentCount);
-  
-  // Update display
-  const quantityElement = productElement.querySelector('.product-quantity');
+  // Add new quantity element if count > 0
   if (currentCount > 0) {
-    if (quantityElement) {
-      quantityElement.textContent = currentCount;
-    } else {
-      productElement.innerHTML += `<div class="product-quantity">${currentCount}</div>`;
-    }
-  } else {
-    if (quantityElement) {
-      quantityElement.remove();
-    }
+    const newQuantityElement = document.createElement('div');
+    newQuantityElement.className = 'product-quantity';
+    newQuantityElement.textContent = currentCount;
+    newQuantityElement.style.zIndex = '1000';
+    
+    // Add animation for visual feedback
+    newQuantityElement.style.transition = 'all 0.1s ease';
+    newQuantityElement.style.transform = 'scale(1.2)';
+    
+    productElement.appendChild(newQuantityElement);
+    
+    // Reset animation
+    setTimeout(() => {
+      if (newQuantityElement.parentElement) {
+        newQuantityElement.style.transform = 'scale(1)';
+      }
+    }, 100);
   }
 }
 
@@ -1328,6 +1462,10 @@ function showMinibar() {
   backArrow.classList.add('visible');
   doneButton.classList.remove('show');
   
+  // Reset unsaved changes
+  unsavedChanges = {};
+  currentProductCounts = {};
+  
   // Show charger buttons
   showChargerButtons();
   
@@ -1338,7 +1476,6 @@ function showMinibar() {
   areProductsOpen = false;
 }
 
-
 function showError(message) {
   errorMessage.textContent = message;
   errorMessage.classList.add('show');
@@ -1348,7 +1485,32 @@ function showError(message) {
   }, 3000);
 }
 
-function closeProducts() {
+function saveCurrentChanges() {
+  if (!currentShelfId || !unsavedChanges[currentShelfId]) {
+    return;
+  }
+  
+  // Save all unsaved changes for the current shelf
+  Object.keys(unsavedChanges[currentShelfId]).forEach(productId => {
+    const newCount = unsavedChanges[currentShelfId][productId];
+    const productName = document.querySelector(`[data-product-id="${productId}"]`)?.getAttribute('data-product-name') || `Product ${productId}`;
+    
+    // Always save the count, even if it's the same as before
+    InventoryManager.updateProductCount(currentRoom, productId, productName, newCount);
+  });
+  
+  // Clear unsaved changes for this shelf
+  delete unsavedChanges[currentShelfId];
+}
+
+function discardCurrentChanges() {
+  // Simply clear unsaved changes without saving
+  if (currentShelfId) {
+    delete unsavedChanges[currentShelfId];
+  }
+}
+
+function closeProductsView() {
   // Show charger buttons again
   showChargerButtons();
   
@@ -1372,7 +1534,28 @@ function closeProducts() {
   currentShelfId = null;
 }
 
+function closeProducts() {
+  // Hide unsaved message if it's showing
+  unsavedMessage.classList.remove('show');
+  
+  // Save changes before closing
+  saveCurrentChanges();
+  
+  // Update charger buttons
+  updateChargerButtonStates();
+  
+  // Close products view
+  closeProductsView();
+}
+
 function logout() {
+  // Hide unsaved message if showing
+  unsavedMessage.classList.remove('show');
+  
+  // Discard any unsaved changes
+  unsavedChanges = {};
+  currentProductCounts = {};
+  
   centerContainer.classList.remove('show');
   roomDisplay.classList.remove('show');
   bar.classList.remove('open');
@@ -1386,6 +1569,7 @@ function logout() {
   
   currentRoom = null;
   isCasinoRoom = false;
+  isMultiplierRoom = false;
   areProductsOpen = false;
   
   bar.classList.remove('above-focused', 'below-focused', 'shelf-1-door-focused', 'shelf-2-door-focused');
@@ -1417,6 +1601,7 @@ loginButton.addEventListener('click', () => {
   
   currentRoom = roomNumber;
   isCasinoRoom = isCasinoRoomNumber(roomNumber);
+  isMultiplierRoom = multiplierRooms.includes(parseInt(roomNumber));
   showMinibar();
 });
 
@@ -1517,13 +1702,36 @@ doneButton.addEventListener('click', () => {
 
 backArrow.addEventListener('click', () => {
   if (areProductsOpen) {
-    closeProducts();
+    // Check if there are unsaved changes
+    const hasUnsavedChanges = currentShelfId && 
+                              unsavedChanges[currentShelfId] && 
+                              Object.keys(unsavedChanges[currentShelfId]).length > 0;
+    
+    if (hasUnsavedChanges) {
+      // Show the unsaved message
+      unsavedMessage.classList.add('show');
+      
+      // Hide message after 2 seconds
+      setTimeout(() => {
+        unsavedMessage.classList.remove('show');
+      }, 2000);
+    }
+    
+    // Discard unsaved changes when back arrow is clicked
+    discardCurrentChanges();
+    
+    // Close products view but stay in minibar
+    closeProductsView();
   } else {
+    // If no products are open, go back to login
     logout();
   }
 });
 
 shelfBackground.addEventListener('click', () => {
+  // Hide unsaved message if it's showing
+  unsavedMessage.classList.remove('show');
+  // Use closeProducts (saves changes) when clicking background
   closeProducts();
 });
 
@@ -1545,6 +1753,7 @@ viewInventory.addEventListener('click', () => {
     localStorage.setItem('lastRoomState', JSON.stringify({
       room: currentRoom,
       isCasino: isCasinoRoom,
+      isMultiplier: isMultiplierRoom,
       timestamp: new Date().toISOString()
     }));
   }
@@ -1569,6 +1778,7 @@ function checkForReturnFromInventory() {
       // Restore the room
       currentRoom = lastRoom;
       isCasinoRoom = state.isCasino;
+      isMultiplierRoom = state.isMultiplier;
       showMinibar();
       
       // Clear the saved state
@@ -1578,18 +1788,10 @@ function checkForReturnFromInventory() {
   }
 }
 
-// Call this when the page loads
-window.addEventListener('load', () => {
-  roomInput.focus();
-  checkForReturnFromInventory();
-});
-</script>
-<script>
-// Add this to prevent double-tap zoom on ALL pages
+// Prevent iOS zoom and improve touch handling
 document.addEventListener('DOMContentLoaded', function() {
-  // Method 1: Prevent zoom on double tap
+  // Prevent double-tap zoom
   let lastTouchEnd = 0;
-  
   document.addEventListener('touchend', function(event) {
     const now = Date.now();
     if (now - lastTouchEnd <= 300) {
@@ -1598,22 +1800,36 @@ document.addEventListener('DOMContentLoaded', function() {
     lastTouchEnd = now;
   }, false);
   
-  // Method 2: Prevent zoom gestures
+  // Prevent zoom gestures
   document.addEventListener('gesturestart', function(event) {
     event.preventDefault();
   });
   
-  // Method 3: Prevent multiple touch zoom
+  // Prevent multiple touch zoom
   document.addEventListener('touchstart', function(event) {
     if (event.touches.length > 1) {
       event.preventDefault();
     }
   }, { passive: false });
   
-  // Method 4: Disable zoom completely on iOS
+  // Disable pinch zoom
   document.addEventListener('touchmove', function(event) {
     if (event.scale !== 1) {
       event.preventDefault();
+    }
+  }, { passive: false });
+  
+  // Focus input on load
+  roomInput.focus();
+  checkForReturnFromInventory();
+});
+
+// Add window load event to ensure everything is ready
+window.addEventListener('load', function() {
+  // Additional touch event prevention
+  document.addEventListener('touchmove', function(e) {
+    if (e.scale !== 1) {
+      e.preventDefault();
     }
   }, { passive: false });
 });
