@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Minibar - Inventory</title>
 <style>
 * {
@@ -541,58 +541,68 @@ const InventoryManager = {
     return false;
   },
   
-  getAllRoomsSummary(sortBy = 'date') {
-    const allInventory = this.getAllInventory();
-    const markedRooms = this.getMarkedRooms();
-    const redRooms = this.getRedRooms();
-    const summaries = [];
-    let totalProducts = 0;
+  // In InventoryManager.getAllRoomsSummary() function, add this:
+getAllRoomsSummary(sortBy = 'date') {
+  const allInventory = this.getAllInventory();
+  const markedRooms = this.getMarkedRooms();
+  const redRooms = this.getRedRooms();
+  const summaries = [];
+  let totalProducts = 0;
+  
+  Object.keys(allInventory).forEach(roomNumber => {
+    const roomInventory = allInventory[roomNumber];
+    const products = roomInventory.products || {};
+    const productItems = [];
+    let roomProductCount = 0;
+    let hasYellowProducts = false;
     
-    Object.keys(allInventory).forEach(roomNumber => {
-      const roomInventory = allInventory[roomNumber];
-      const products = roomInventory.products || {};
-      const productItems = [];
-      let roomProductCount = 0;
-      
-      Object.keys(products)
-        .sort((a, b) => parseInt(a) - parseInt(b))
-        .forEach(productId => {
-          const product = products[productId];
-          if (product.count > 0) {
-            productItems.push({
-              name: product.name,
-              count: product.count
-            });
-            roomProductCount += product.count;
+    Object.keys(products)
+      .sort((a, b) => parseInt(a) - parseInt(b))
+      .forEach(productId => {
+        const product = products[productId];
+        if (product.count > 0) {
+          // Check if it's a yellow product
+          const isYellow = product.type === 'yellow';
+          if (isYellow) {
+            hasYellowProducts = true;
           }
-        });
+          
+          productItems.push({
+            name: product.name,
+            count: product.count,
+            isYellow: isYellow  // Add this flag
+          });
+          roomProductCount += product.count;
+        }
+      });
+    
+    if (productItems.length > 0) {
+      totalProducts += roomProductCount;
       
-      if (productItems.length > 0) {
-        totalProducts += roomProductCount;
-        
-        let status = 'none';
-        if (markedRooms.includes(roomNumber)) status = 'green';
-        else if (redRooms.includes(roomNumber)) status = 'red';
-        
-        summaries.push({
-          room: roomNumber,
-          products: productItems,
-          totalCount: roomProductCount,
-          status: status,
-          lastUpdated: roomInventory.lastUpdated || new Date().toISOString(),
-          timestamp: new Date(roomInventory.lastUpdated || new Date()).getTime()
-        });
-      }
-    });
-    
-    const sortedSummaries = this.sortSummaries(summaries, sortBy);
-    
-    return {
-      summaries: sortedSummaries,
-      totalProducts,
-      sortBy
-    };
-  },
+      let status = 'none';
+      if (markedRooms.includes(roomNumber)) status = 'green';
+      else if (redRooms.includes(roomNumber)) status = 'red';
+      else if (hasYellowProducts) status = 'yellow'; // Add yellow status
+      
+      summaries.push({
+        room: roomNumber,
+        products: productItems,
+        totalCount: roomProductCount,
+        status: status,
+        lastUpdated: roomInventory.lastUpdated || new Date().toISOString(),
+        timestamp: new Date(roomInventory.lastUpdated || new Date()).getTime()
+      });
+    }
+  });
+  
+  const sortedSummaries = this.sortSummaries(summaries, sortBy);
+  
+  return {
+    summaries: sortedSummaries,
+    totalProducts,
+    sortBy
+  };
+},
   
   sortSummaries(summaries, sortBy) {
     if (sortBy === 'date') {
@@ -736,7 +746,7 @@ document.addEventListener('DOMContentLoaded', function() {
       roomItem.setAttribute('data-room', item.room);
       
       const productItemsHTML = item.products.map(product => 
-        `<span class="product-item">${product.count} ${product.name}</span>`
+        `<span class="product-item ${product.isYellow ? 'yellow-product' : ''}">${product.count} ${product.name}</span>`
       ).join('');
       
       const lastUpdated = new Date(item.lastUpdated);
@@ -800,13 +810,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let touchStartTime = 0;
     let isSwiping = false;
     let swipeType = null;
+    let isScrollEnabled = true; // Track if we should allow scrolling
     
     roomItem.addEventListener('touchstart', (e) => {
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
       touchStartTime = Date.now();
       isSwiping = false;
-      e.preventDefault();
+      isScrollEnabled = true; // Reset scroll state
     });
     
     roomItem.addEventListener('touchmove', (e) => {
@@ -820,6 +831,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Check if it's a horizontal swipe (not vertical scroll)
       if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
         isSwiping = true;
+        isScrollEnabled = false; // Disable scrolling during horizontal swipe
         e.preventDefault();
         
         const currentStatus = InventoryManager.isRoomMarked(roomNumber);
@@ -853,6 +865,10 @@ document.addEventListener('DOMContentLoaded', function() {
           
           roomItem.style.transform = `translateX(${Math.max(deltaX * 0.5, -75)}px)`;
         }
+      } else if (isScrollEnabled) {
+        // Allow vertical scrolling
+        // Don't prevent default - let the browser handle scrolling
+        return;
       }
     });
     
@@ -918,7 +934,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 500);
       } else if (isTap) {
         // It's a tap - do nothing
-        // Remove any existing click handlers
         e.preventDefault();
         e.stopPropagation();
       }
@@ -931,16 +946,22 @@ document.addEventListener('DOMContentLoaded', function() {
       touchStartTime = 0;
       isSwiping = false;
       swipeType = null;
+      isScrollEnabled = true;
     });
     
-    // Prevent click events on mobile
-    roomItem.addEventListener('click', (e) => {
-      // Only prevent clicks on mobile devices
-      if ('ontouchstart' in window || navigator.maxTouchPoints) {
-        e.preventDefault();
-        e.stopPropagation();
+    // Allow scrolling on the inventory list container
+    roomItem.addEventListener('touchmove', (e) => {
+      // Allow vertical scrolling by not preventing default
+      if (Math.abs(e.touches[0].clientY - touchStartY) > Math.abs(e.touches[0].clientX - touchStartX)) {
+        // Vertical movement - allow scrolling
+        return;
       }
-    });
+    }, { passive: true });
+    
+    // Remove the click event handler that was preventing everything
+    // roomItem.addEventListener('click', (e) => {
+    //   // Allow regular clicking on desktop
+    // });
   }
   
   function updateSortButton() {

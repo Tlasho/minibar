@@ -507,7 +507,26 @@ body {
   background: #10b981;
   color: white;
 }
+.inventory-room-item.yellow {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: #f59e0b;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+}
 
+.inventory-room-item.yellow .room-number {
+  color: #fbbf24;
+  font-weight: bold;
+}
+
+.inventory-room-item.yellow .room-summary {
+  color: #fde68a;
+}
+
+.inventory-room-item.yellow .product-item.yellow-product {
+  background: rgba(245, 158, 11, 0.3);
+  border-color: #f59e0b;
+  color: #fde68a;
+}
 .totals-button:hover {
   background: #059669;
   transform: translateY(-2px);
@@ -837,6 +856,9 @@ body {
     padding: 8px 16px;
     top: 15px;
   }
+  html {
+  touch-action: manipulation;
+}
   
   .done-button {
     top: 15px;
@@ -844,6 +866,14 @@ body {
     padding: 8px 16px;
     font-size: 14px;
   }
+  * * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  /* ADD THESE 2 LINES: */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
   
   .settings-button {
     width: 45px;

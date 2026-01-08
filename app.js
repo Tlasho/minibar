@@ -20,7 +20,7 @@ const clearAll = document.getElementById("clearAll");
 const inventorySummary = document.getElementById("inventorySummary");
 
 // Casino room numbers
-const casinoRooms = [103, 105, 112, 203, 205, 212, 313];
+const casinoRooms = [103, 105, 112, 203, 205, 212, 312];
 const casinoRangeStart = 401;
 const casinoRangeEnd = 410;
 
