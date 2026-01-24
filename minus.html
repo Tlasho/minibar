@@ -262,7 +262,7 @@ body {
 
 .back-arrow {
   position: fixed;
-  top: 20px;
+  top: 120px;
   left: 20px;
   font-size: 18px;
   color: #e5e7eb;
@@ -285,9 +285,10 @@ body {
 }
 
 /* Total counts display */
+/* Total counts display */
 .total-counts {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   margin-top: 20px;
   flex-wrap: wrap;
   gap: 15px;
@@ -295,11 +296,45 @@ body {
 
 .total-box {
   background: rgba(30, 41, 59, 0.8);
-  padding: 15px;
-  border-radius: 10px;
+  padding: 10px;
+  border-radius: 20px;
   border: 2px solid #475569;
-  min-width: 150px;
+  min-width: 140px;
   text-align: center;
+  display: inline-block;
+  margin: 0 5px;
+}
+
+.total-label {
+  color: #94a3b8;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.total-value {
+  color: #e5e7eb;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.total-positive .total-value {
+  color: #10b981;
+}
+
+.total-negative .total-value {
+  color: #ef4444;
+}
+
+@media (max-width: 768px) {
+  .total-counts {
+    flex-direction: row;
+    justify-content: space-around;
+  }
+  
+  .total-box {
+    min-width: 120px;
+    margin: 0;
+  }
 }
 
 .total-label {
@@ -324,7 +359,7 @@ body {
 
 @media (max-width: 768px) {
   .minus-container {
-    margin-top: 80px;
+    margin-top: 0px;
     padding: 20px;
   }
   
@@ -699,11 +734,10 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load data on page load
   loadMinusPage();
 });
-</script>
-<script>
-// Add this to prevent double-tap zoom on ALL pages
+
+// Mobile scrolling fix - minimal and non-intrusive
 document.addEventListener('DOMContentLoaded', function() {
-  // Method 1: Prevent zoom on double tap
+  // Only prevent double-tap zoom, allow all other gestures
   let lastTouchEnd = 0;
   
   document.addEventListener('touchend', function(event) {
@@ -714,24 +748,28 @@ document.addEventListener('DOMContentLoaded', function() {
     lastTouchEnd = now;
   }, false);
   
-  // Method 2: Prevent zoom gestures
-  document.addEventListener('gesturestart', function(event) {
-    event.preventDefault();
-  });
-  
-  // Method 3: Prevent multiple touch zoom
+  // Prevent zoom gestures only when multiple fingers are used
   document.addEventListener('touchstart', function(event) {
     if (event.touches.length > 1) {
       event.preventDefault();
     }
-  }, { passive: false });
+  });
   
-  // Method 4: Disable zoom completely on iOS
+  // IMPORTANT: Allow all single-finger touch movements (scrolling)
+  // This is the key fix - don't prevent default on single touch movements
   document.addEventListener('touchmove', function(event) {
-    if (event.scale !== 1) {
+    // Only prevent if it's a pinch zoom (2+ fingers)
+    if (event.scale !== 1 && event.scale) {
       event.preventDefault();
     }
+    // Single finger movements (scrolling) are allowed
   }, { passive: false });
+  
+  // Ensure the minus list has proper scrolling
+  const minusList = document.getElementById('minusList');
+  if (minusList) {
+    minusList.style.webkitOverflowScrolling = 'touch';
+  }
 });
 </script>
 </body>

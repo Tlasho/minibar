@@ -353,7 +353,7 @@ body {
 } 
 @media (max-width: 768px) { 
   .inventory-container { 
-    margin-top: 80px; 
+    margin-top: 45px; 
     padding: 20px; 
   } 
   .inventory-title { 
@@ -936,20 +936,23 @@ body {
       
       function addSwipeEvents(roomItem, roomNumber) { 
         let touchStartX = 0; 
-        let touchEndX = 0; 
         let touchStartY = 0; 
+        let touchEndX = 0; 
         let touchEndY = 0; 
         let touchStartTime = 0; 
         let isSwiping = false; 
         let swipeType = null; 
-        let isScrollEnabled = true; 
+        let isVerticalScroll = false;
+        let scrollThreshold = 5; // Minimum pixels to determine scroll vs swipe
+        let swipeThreshold = 30; // Minimum pixels to start a swipe
         
         roomItem.addEventListener('touchstart', (e) => { 
           touchStartX = e.touches[0].clientX; 
           touchStartY = e.touches[0].clientY; 
           touchStartTime = Date.now(); 
           isSwiping = false; 
-          isScrollEnabled = true; 
+          isVerticalScroll = false;
+          e.stopPropagation(); // Prevent event from bubbling to parent
         }); 
         
         roomItem.addEventListener('touchmove', (e) => { 
@@ -960,11 +963,17 @@ body {
           const deltaX = touchEndX - touchStartX; 
           const deltaY = touchEndY - touchStartY; 
           
+          // First check if it's vertical scrolling
+          if (!isSwiping && Math.abs(deltaY) > scrollThreshold) {
+            isVerticalScroll = true;
+            return; // Allow vertical scrolling
+          }
+          
           // Check if it's a horizontal swipe (not vertical scroll) 
-          if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) { 
+          if (!isVerticalScroll && Math.abs(deltaX) > swipeThreshold && Math.abs(deltaX) > Math.abs(deltaY)) { 
             isSwiping = true; 
-            isScrollEnabled = false; 
             e.preventDefault(); 
+            e.stopPropagation(); // Prevent parent scrolling
             
             const currentStatus = InventoryManager.isRoomMarked(roomNumber); 
             
@@ -994,11 +1003,8 @@ body {
               progressBar.style.background = '#94a3b8'; 
               roomItem.style.transform = `translateX(${Math.max(deltaX * 0.5, -75)}px)`; 
             } 
-          } else if (isScrollEnabled) { 
-            // Allow vertical scrolling 
-            return; 
-          } 
-        }); 
+          }
+        }, { passive: false }); 
         
         roomItem.addEventListener('touchend', (e) => { 
           if (!touchStartX) return; 
@@ -1015,9 +1021,10 @@ body {
           progressBar.style.width = '0%'; 
           progressBar.style.background = ''; 
           
-          // Handle swipe if it was a significant horizontal swipe 
-          if (isSwiping && Math.abs(deltaX) > 100) { 
+          // Handle swipe if it was a significant horizontal swipe and not vertical scrolling
+          if (isSwiping && !isVerticalScroll && Math.abs(deltaX) > 100) { 
             e.preventDefault(); 
+            e.stopPropagation(); // Prevent click events
             
             if (deltaX > 0) { 
               // Swipe right 
@@ -1059,7 +1066,7 @@ body {
             setTimeout(() => { 
               loadInventory(); 
             }, 500); 
-          } else if (isTap) { 
+          } else if (isTap && !isVerticalScroll) { 
             // It's a tap - do nothing 
             e.preventDefault(); 
             e.stopPropagation(); 
@@ -1073,17 +1080,16 @@ body {
           touchStartTime = 0; 
           isSwiping = false; 
           swipeType = null; 
-          isScrollEnabled = true; 
+          isVerticalScroll = false;
         }); 
         
-        // Allow scrolling on the inventory list container 
-        roomItem.addEventListener('touchmove', (e) => { 
-          // Allow vertical scrolling by not preventing default 
-          if (Math.abs(e.touches[0].clientY - touchStartY) > Math.abs(e.touches[0].clientX - touchStartX)) { 
-            // Vertical movement - allow scrolling 
-            return; 
-          } 
-        }, { passive: true }); 
+        // Prevent click events after swipe
+        roomItem.addEventListener('click', (e) => {
+          if (isSwiping) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        });
       } 
       
       function updateSortButton() { 
@@ -1164,9 +1170,9 @@ body {
   </script> 
 
   <script> 
-    // Add this to prevent double-tap zoom on ALL pages 
+    // Improved scrolling and zoom prevention
     document.addEventListener('DOMContentLoaded', function() { 
-      // Method 1: Prevent zoom on double tap 
+      // Prevent double-tap zoom 
       let lastTouchEnd = 0; 
       document.addEventListener('touchend', function(event) { 
         const now = Date.now(); 
@@ -1176,24 +1182,34 @@ body {
         lastTouchEnd = now; 
       }, false); 
       
-      // Method 2: Prevent zoom gestures 
+      // Prevent zoom gestures 
       document.addEventListener('gesturestart', function(event) { 
         event.preventDefault(); 
       }); 
       
-      // Method 3: Prevent multiple touch zoom 
+      // Prevent multiple touch zoom 
       document.addEventListener('touchstart', function(event) { 
         if (event.touches.length > 1) { 
           event.preventDefault(); 
         } 
       }, { passive: false }); 
       
-      // Method 4: Disable zoom completely on iOS 
+      // Modified: Allow single-finger scrolling, prevent only pinch zoom
       document.addEventListener('touchmove', function(event) { 
-        if (event.scale !== 1) { 
-          event.preventDefault(); 
-        } 
+        // Only prevent if it's a pinch zoom (2+ fingers)
+        if (event.touches.length > 1) {
+          event.preventDefault();
+        }
+        // Allow single-finger scrolling
       }, { passive: false }); 
+      
+      // Ensure scrolling works properly on the inventory list
+      const inventoryList = document.getElementById('inventoryList');
+      if (inventoryList) {
+        inventoryList.addEventListener('touchmove', function(e) {
+          // Allow all touch movements in the inventory list
+        }, { passive: true });
+      }
     }); 
   </script> 
 </body> 
