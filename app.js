@@ -18,6 +18,8 @@ const settingsPanel = document.getElementById("settingsPanel");
 const viewInventory = document.getElementById("viewInventory");
 const clearAll = document.getElementById("clearAll");
 const inventorySummary = document.getElementById("inventorySummary");
+// Add to your DOM Elements section:
+const unsavedMessage = document.getElementById("unsavedMessage");
 
 // Casino room numbers
 const casinoRooms = [103, 105, 112, 203, 205, 212, 312];
@@ -166,7 +168,7 @@ function createProductElement(product) {
   const productElement = document.createElement('div');
   productElement.className = 'product';
   productElement.setAttribute('data-product-id', product.id);
-  productElement.setAttribute('data-product-name', product.name);
+  productElement.setAttribute('data-product-name', productDisplayNames[product.id]);
   productElement.setAttribute('data-max-count', product.maxCount);
   
   // Get current count from inventory

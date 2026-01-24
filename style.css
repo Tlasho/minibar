@@ -10,6 +10,29 @@ body {
   touch-action: manipulation;
   -ms-touch-action: manipulation;
 }
+/* UNSAVED CHANGES MESSAGE */
+.unsaved-message {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 210;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border: 1px solid #dc2626;
+  white-space: nowrap;
+}
+
+.unsaved-message.show {
+  opacity: 1;
+  visibility: visible;
+}
 
 * {
   -webkit-touch-callout: none;

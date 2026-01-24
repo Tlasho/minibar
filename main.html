@@ -870,6 +870,35 @@ body{
 </div>
 
 <script>
+  const PRODUCT_SORT_ORDER = [
+    "Chacha",
+    "Finlandia (0.05)",
+    "Johnnie Walker",
+    "Jack Daniels",
+    "Hennessy",
+    "Sarajishvili",
+    "Glenmorangie",
+    "Jameson",
+    "Tsinandali",
+    "Khvanchkara",
+    "Saperavi",
+    "Moet",
+    "Heineken (0.33)",
+    "Fruit Juice (0.25)",
+    "Raffaelo (pack)",
+    "Nuts (30gr)",
+    "Chips (40gr)",
+    "Still Water (0.5)",
+    "Sparkling Water (0.5)",
+    "Coca-Cola (0.33)",
+    "Red Bull (0.25)",
+    "Snickers",
+    "M&M's",
+    "Honey",
+    "Charger",
+    "Cable"
+];
+  
 // Inventory Manager for single-page app
 const InventoryManager = {
   // Initialize inventory if not exists
@@ -1056,32 +1085,32 @@ const productPrices = {
 
 // Product names for inventory summary
 const productDisplayNames = {
-  1: "Coca-Cola (0.33)",
-  2: "Red Bull (0.25)",
-  3: "Chips (40gr)",
-  4: "Nuts (30gr)",
-  5: "Honey",
-  7: "Still Water (0.5)",
-  8: "Heineken (0.33)",
-  9: "Fruit Juice (0.25)",
-  10: "Sparkling Water (0.5)",
-  11: "Tsinandali",
-  12: "Khvanchkara",
-  13: "Saperavi",
-  14: "Chacha",
-  15: "Moet",
-  30: "Raffaelo (pack)",
-  31: "M&M's",
-  32: "Snickers",
-  40: "Jameson",
-  41: "Finlandia (0.05)",
-  42: "Johnnie Walker",
-  43: "Hennessy",
-  44: "Jack Daniels",
-  45: "Sarajishvili",
-  46: "Glenmorangie",
-  [CHARGER_ID]: "Charger",
-  [CABLE_ID]: "Cable"
+  1:  "Chacha",
+2:  "Finlandia (0.05)",
+3:  "Johnnie Walker",
+4:  "Jack Daniels",
+5:  "Hennessy",
+6:  "Sarajishvili",
+7:  "Glenmorangie",
+8:  "Jameson",
+9:  "Tsinandali",
+10: "Khvanchkara",
+11: "Saperavi",
+12: "Moet",
+13: "Heineken (0.33)",
+14: "Fruit Juice (0.25)",
+15: "Raffaelo (pack)",
+16: "Nuts (30gr)",
+17: "Chips (40gr)",
+18: "Still Water (0.5)",
+19: "Sparkling Water (0.5)",
+20: "Coca-Cola (0.33)",
+21: "Red Bull (0.25)",
+22: "Snickers",
+23: "M&M's",
+24: "Honey",
+25: "Charger",
+26: "Cable"
 };
 
 // BASE PRODUCTS DATA (with original max counts)
@@ -1090,14 +1119,14 @@ const baseProducts = {
     { id: 1, name: "Cola", image: "https://product.hstatic.net/1000282430/product/nuoc-ngot-coca-cola-nhat-500ml_f61289e9a50d41398d9711800846f9b0_grande.jpg", maxCount: 1 },
     { id: 2, name: "Redbull", image: "https://images.europroduct.ge/prod/7d1a791158/9a46837c83b04917aa53b2e5af25aed2_90376504.jpg?w=580", maxCount: 1 },
     { id: 3, name: "Chips", image: "https://m.media-amazon.com/images/I/61w6Gc8ox6L.jpg", maxCount: 1 },
-    { id: 4, name: "Nuts", image: "https://cdn.2nabiji.ge/products/mitsis-thkhili-ola-mokhaluli-mariliani-300x300.webp", maxCount: 1 },
+    { id: 4, name: "Peanuts", image: "https://cdn.2nabiji.ge/products/mitsis-thkhili-ola-mokhaluli-mariliani-300x300.webp", maxCount: 1 },
     { id: 5, name: "Honey", image: "https://www.trubeehoney.com/cdn/shop/products/MINI_1024x1024.jpg?v=1620842945", maxCount: 2 },
   ],
   'below': [
-    { id: 7, name: "Water", image: "https://www.aversi.ge/uploads/matimg/293a37597e5b2ad1120984e131d7e82a.jpg", maxCount: 2 },
+    { id: 7, name: "Still Water", image: "https://www.aversi.ge/uploads/matimg/293a37597e5b2ad1120984e131d7e82a.jpg", maxCount: 2 },
     { id: 8, name: "Heineken", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfFQEReT42FKmj-5xxd6fmHEZhzop7IYXzsw&s", maxCount: 2 },
     { id: 9, name: "Fruit Juice", image: "https://nikorasupermarket.ge/modules/current_promotions/uploads/16794.png", maxCount: 2 },
-    { id: 10, name: "nabeghlavi", image: "https://imagedelivery.net/d_EE26O5eWcJDRYn-qMBOg/3084d5f4-c3ec-40f4-05f5-c31c8cda5200/public", maxCount: 1 },
+    { id: 10, name: "Sparkling Water", image: "https://imagedelivery.net/d_EE26O5eWcJDRYn-qMBOg/3084d5f4-c3ec-40f4-05f5-c31c8cda5200/public", maxCount: 1 },
     { id: 11, name: "Tsinandali", image: "https://8000vintages.ge/images/thumbnails/1200/1800/detailed/18/keburia_tsinandali_2022.png", maxCount: 1 },
     { id: 12, name: "Khvanchkara", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROcYIQbB-ZZSjivKhrV9qU3yTMucHdBEobAg&s", maxCount: 1 },
     { id: 13, name: "Saperavi", image: "https://8000vintages.ge/images/thumbnails/1200/1800/detailed/18/keburia_saperavi_2022.png", maxCount: 1 },
@@ -1124,7 +1153,7 @@ const casinoExtraProducts = {
     { id: 15, name: "moet", image: "https://cdn11.bigcommerce.com/s-9hu30/images/stencil/2048x2048/products/482/2416/moet_and_chandon_brut_imperial_187ml_mini_split__85900.1637085078.jpg?c=2", maxCount: 1 }
   ],
   'door-2': [
-    { id: 46, name: "glen moray", image: "https://www.astorwines.com/images/items/01024.jpg", maxCount: 1 }
+    { id: 46, name: "glenmorangie", image: "https://devinecellars.com.au/wp-content/uploads/2020/01/Glenmorangie.png", maxCount: 1 }
   ]
 };
 
