@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Minibar - Notes</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #0b0f1a;
+            color: #e5e7eb;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .notes-container {
+            max-width: 800px;
+            margin: 60px auto 0;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 30px;
+            border-radius: 16px;
+            border: 2px solid #475569;
+        }
+        
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .notes-title {
+            color: #e5e7eb;
+            font-size: 32px;
+        }
+        
+        .back-arrow {
+            font-size: 18px;
+            color: #e5e7eb;
+            cursor: pointer;
+            background: rgba(30, 41, 59, 0.8);
+            padding: 10px 15px;
+            border-radius: 12px;
+            border: 2px solid #475569;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+        }
+        
+        .back-arrow:hover {
+            background: rgba(51, 65, 85, 0.9);
+            transform: translateX(-3px);
+        }
+        
+        .notes-input-container {
+            margin-bottom: 20px;
+        }
+        
+        #notesInput {
+            width: 100%;
+            min-height: 400px; /* CHANGED FROM 300px TO 400px */
+            padding: 20px;
+            background: #1e293b;
+            border: 2px solid #475569;
+            border-radius: 12px;
+            color: #e5e7eb;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+        
+        #notesInput:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+        }
+        
+        .notes-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .clear-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            background: #ef4444;
+            color: white;
+        }
+        
+        .clear-button:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .notification.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .notification.error {
+            background: #ef4444;
+        }
+        
+        .last-saved {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .notes-container {
+                margin-top: 145px;
+                padding: 20px;
+            }
+            
+            .notes-title {
+                font-size: 24px;
+            }
+            
+            #notesInput {
+                min-height: 350px; /* CHANGED FROM 250px TO 350px for mobile */
+                font-size: 14px;
+            }
+            
+            .notes-controls {
+                flex-direction: column;
+            }
+            
+            .clear-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notes-container">
+        <div class="notes-header">
+            <h1 class="notes-title"> ჩაწერა</h1>
+            <a href="main.html" class="back-arrow" id="backButton">← უკან</a>
+        </div>
+        
+        <div class="notes-input-container">
+            <textarea id="notesInput" placeholder="ჩაწერე აქ..."></textarea>
+        </div>
+        
+        <div class="notes-controls">
+            <button class="clear-button" id="clearButton">წაშლა</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const notesInput = document.getElementById('notesInput');
+        const clearButton = document.getElementById('clearButton');
+        const notification = document.getElementById('notification');
+        const lastSaved = document.getElementById('lastSaved');
+        const backButton = document.getElementById('backButton');
+        
+        // Variable to track if notes have changed
+        let notesChanged = false;
+        
+        // Load saved notes
+        function loadNotes() {
+            const savedNotes = localStorage.getItem('minibarNotes');
+            const savedTime = localStorage.getItem('minibarNotesTime');
+            
+            if (savedNotes) {
+                notesInput.value = savedNotes;
+            }
+            
+            if (savedTime) {
+                lastSaved.textContent = `Last saved: ${savedTime}`;
+            }
+        }
+        
+        // Save notes automatically
+        function saveNotes() {
+            const notes = notesInput.value.trim();
+            
+            // Save to localStorage
+            localStorage.setItem('minibarNotes', notes);
+            
+            // Save timestamp
+            const now = new Date();
+            const timeString = now.toLocaleString();
+            localStorage.setItem('minibarNotesTime', timeString);
+            
+            // Update last saved display
+            lastSaved.textContent = `Last saved: ${timeString}`;
+            
+            // Show notification
+            notification.textContent = 'Notes saved automatically!';
+            notification.classList.remove('error');
+            notification.classList.add('show');
+            
+            // Hide after 2 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+            
+            // Reset changed flag
+            notesChanged = false;
+        }
+        
+        // Clear all notes
+        function clearNotes() {
+            if (confirm('დარწმუნებული ხარ? ყველაფერი წაიშლება')) {
+                notesInput.value = '';
+                localStorage.removeItem('minibarNotes');
+                localStorage.removeItem('minibarNotesTime');
+                lastSaved.textContent = 'Last saved: Never';
+                
+                notification.textContent = 'Notes cleared!';
+                notification.classList.remove('error');
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+                
+                notesChanged = true;
+            }
+        }
+        
+        // Auto-save when text changes (with debounce)
+        let saveTimeout;
+        function scheduleAutoSave() {
+            notesChanged = true;
+            
+            // Clear any existing timeout
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+            }
+            
+            // Set new timeout to save after 2 seconds of no typing
+            saveTimeout = setTimeout(() => {
+                if (notesChanged) {
+                    saveNotes();
+                }
+            }, 2000);
+        }
+        
+        // Save when back button is clicked
+        function handleBackClick(e) {
+            if (notesChanged) {
+                saveNotes();
+            }
+            // Allow normal navigation to continue
+        }
+        
+        // Save when page is being unloaded (closing tab, refreshing, etc.)
+        function handlePageUnload(e) {
+            if (notesChanged) {
+                // Note: Most browsers block or limit synchronous localStorage in beforeunload
+                // So we'll use a try-catch and hope it works
+                try {
+                    saveNotes();
+                } catch (error) {
+                    // Silent fail
+                }
+            }
+        }
+        
+        // Event Listeners
+        clearButton.addEventListener('click', clearNotes);
+        notesInput.addEventListener('input', scheduleAutoSave);
+        backButton.addEventListener('click', handleBackClick);
+        
+        // Handle page unload
+        window.addEventListener('beforeunload', handlePageUnload);
+        
+        // Also listen for visibility change (tab switching)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && notesChanged) {
+                saveNotes();
+            }
+        });
+        
+        // Load notes on page load
+        document.addEventListener('DOMContentLoaded', loadNotes);
+        
+        // Focus on textarea
+        notesInput.focus();
+        
+        // Auto-save every 30 seconds as backup
+        setInterval(() => {
+            if (notesChanged) {
+                saveNotes();
+            }
+        }, 30000); // 30 seconds
+    </script>
+</body>
+</html>

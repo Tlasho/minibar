@@ -8,6 +8,11 @@
 * {
   box-sizing: border-box;
 }
+/* SMALL SQUARE NOTES BUTTON ON LEFT */
+.notes-btn-left:hover {
+  background: #7c3aed;
+  transform: translateY(-50%) scale(1.1);
+}
 body{
   background:#0b0f1a;
   display:flex;
@@ -794,11 +799,27 @@ body{
     <p class="login-subtitle">შეიყვანეთ ოთახის ნომერი</p>
     <input type="text" class="room-input" id="roomInput" placeholder="(მგ. 101 ან 2201)" maxlength="4" autofocus>
     <button class="login-button" id="loginButton">შესვლა</button>
-    <div style="margin-top: 25px;">
+    
+    <!-- ============ BUTTONS SECTION - WHERE NOTES BUTTON IS ADDED ============ -->
+    <!-- To move buttons higher or lower, change the margin-top value below -->
+    <!-- Current: margin-top: 25px (makes space from login button) -->
+    <!-- Increase to move down: margin-top: 35px -->
+    <!-- Decrease to move up: margin-top: 15px -->
+    <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 15px;">
+      <!-- Minuses button - Red -->
       <a href="minus.html" style="display: block; padding: 12px 20px; background: #ef4444; color: white; text-decoration: none; border-radius: 12px; border: 2px solid #000000; font-size: 17px; text-align: center; font-weight: bold;">
         მინუსები
       </a>
+      
+      <!-- NOTES BUTTON ADDED HERE - Purple -->
+      <!-- To change button position in order, move this <a> tag above or below other buttons -->
+      <!-- To change color, change background: #8b5cf6 to another color -->
+      <!-- To change size, adjust padding values (first is top/bottom, second is left/right) -->
+      <a href="notes.html" style="display: block; padding: 12px 5px; background: #8b5cf6; color: white; text-decoration: none; border-radius: 12px; border: 2px solid #000000; font-size: 17px; text-align: center; font-weight: bold;">
+       ჩაწერა
+      </a>
     </div>
+    
     <div class="error-message" id="errorMessage"></div>
     <div class="valid-rooms">
       <div class="room-category">ოთახები</div>
@@ -811,9 +832,15 @@ body{
       <div style="margin-top: 10px; color: #fbbf24;">კაზინოს ოთახები: 103, 105, 112, 203, 205, 212, 312, 401-410, 501-502</div>
       <div style="margin-top: 10px; color: #60a5fa;">ოთხი მინიბარი: 501</div>
     </div>
-    <a href="inventory.html" style="display: block; padding: 12px 12px; background: #157e3e; color: white; text-decoration: none; border-radius: 12px; border: 2px solid #000000; font-size: 17px; text-align: center; font-weight: bold;">
-      შევსება
-    </a>
+    
+    <!-- Inventory button - Green -->
+    <!-- To move this button, adjust margin-top value below -->
+    <!-- Current: margin-top: 25px (makes space from room info) -->
+    <div style="margin-top: 25px;">
+      <a href="inventory.html" style="display: block; padding: 12px 12px; background: #157e3e; color: white; text-decoration: none; border-radius: 12px; border: 2px solid #000000; font-size: 17px; text-align: center; font-weight: bold;">
+        შევსება
+      </a>
+    </div>
   </div>
 </div>
 
