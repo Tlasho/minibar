@@ -675,20 +675,7 @@
             z-index: 2;
         }
 
-        .room-action-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-            color: var(--text-secondary);
-            touch-action: manipulation;
-        }
+        
 
         .room-action-btn:hover {
             background: rgba(255, 255, 255, 0.2);
@@ -1123,7 +1110,7 @@
                 card.innerHTML = `
                     <div class="swipe-feedback complete">
                         <i class="fas fa-check-circle"></i>
-                        <span>დასრულებული</span>
+                        <span>შევსებული</span>
                     </div>
                     <div class="swipe-feedback pending">
                         <i class="fas fa-clock"></i>
@@ -1136,11 +1123,11 @@
                         <div class="room-number ${statusClass}">
                             <i class="fas fa-door-closed"></i>
                             ოთახი ${item.room}
-                            ${statusClass ? `<span class="badge">${statusClass === 'completed' ? 'დასრულებული' : 'მოლოდინში'}</span>` : ''}
+                            ${statusClass ? `<span class="badge">${statusClass === 'completed' ? 'დასრულებული' : 'შევსებული'}</span>` : ''}
                         </div>
                         <div class="room-actions">
                             <div class="room-action-btn delete-btn" title="წაშლა">
-                                <i class="fas fa-trash-alt"></i>
+                                
                             </div>
                         </div>
                     </div>
@@ -1318,13 +1305,13 @@
                         this.showNotification(`ოთახი ${roomNumber} დასრულებულია`, 'success');
                     } else {
                         InventoryManager.markRoom(roomNumber, 'red');
-                        this.showNotification(`ოთახი ${roomNumber} მოლოდინშია`, 'error');
+                        this.showNotification(`ოთახი ${roomNumber} შევსებულია`, 'error');
                     }
                 } else {
                     // Swipe left - undo
                     if (currentStatus) {
                         InventoryManager.unmarkRoom(roomNumber);
-                        this.showNotification(`ოთახი ${roomNumber} განახლებულია`, 'info');
+                        this.showNotification(`ოთახი ${roomNumber} შესავსებია`, 'info');
                     }
                 }
                 
