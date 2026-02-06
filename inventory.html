@@ -1,1486 +1,1477 @@
 <!DOCTYPE html>
-<html>
+<html lang="ka">
 <head>
-<script src="nozoom.js"></script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Minibar - Inventory</title>
-<style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-body {
-  font-family: Arial, sans-serif;
-  background: #0b0f1a;
-  color: #e5e7eb;
-}
-.inventory-page {
-  padding: 20px;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #0b0f1a 0%, #1e293b 100%);
-}
-.inventory-container {
-  max-width: 800px;
-  margin: 60px auto 0;
-  background: rgba(15, 23, 42, 0.9);
-  padding: 30px;
-  border-radius: 16px;
-  border: 2px solid #475569;
-}
-.inventory-title {
-  color: #e5e7eb;
-  font-size: 32px;
-  margin-bottom: 30px;
-  text-align: center;
-}
-.inventory-controls {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 30px;
-  flex-wrap: wrap;
-}
-.clear-button, .export-button, .sort-button {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.clear-button {
-  background: #ef4444;
-  color: white;
-}
-.clear-button:hover {
-  background: #dc2626;
-  transform: translateY(-2px);
-}
-.export-button {
-  background: #3b82f6;
-  color: white;
-}
-.export-button:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
-}
-.sort-button {
-  background: #8b5cf6;
-  color: white;
-}
-.sort-button:hover {
-  background: #7c3aed;
-  transform: translateY(-2px);
-}
-.sort-button.active {
-  background: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
-}
-.inventory-list {
-  background: rgba(30, 41, 59, 0.5);
-  border-radius: 12px;
-  padding: 20px;
-  min-height: 300px;
-  max-height: 500px;
-  overflow-y: auto;
-}
-.inventory-room-item {
-  background: rgba(15, 23, 42, 0.8);
-  padding: 20px;
-  margin-bottom: 15px;
-  border-radius: 12px;
-  border: 2px solid #475569;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  user-select: none;
-  position: relative;
-  overflow: hidden;
-  transform-origin: center;
-}
-.inventory-room-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 100%;
-  background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.3) 100%);
-  transition: width 0.3s ease;
-  z-index: 1;
-}
-.inventory-room-item.swiping-red::before {
-  width: 100%;
-}
-.inventory-room-item.swiping-green::before {
-  width: 100%;
-  background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.3) 100%);
-}
-.inventory-room-item.green {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: #10b981;
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
-  opacity: 0.8;
-}
-.inventory-room-item.green .room-number {
-  color: #10b981;
-  font-weight: bold;
-}
-.inventory-room-item.green .room-summary {
-  color: #a7f3d0;
-}
-.inventory-room-item.green .checkmark {
-  opacity: 1;
-  transform: scale(1);
-}
-.inventory-room-item.red {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: #ef4444;
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
-}
-.inventory-room-item.red .room-number {
-  color: #fca5a5;
-  font-weight: bold;
-}
-.inventory-room-item.red .room-summary {
-  color: #fecaca;
-}
-.inventory-room-item.red .checkmark {
-  opacity: 1;
-  transform: scale(1);
-}
-.inventory-room-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.room-number {
-  color: #60a5fa;
-  font-weight: bold;
-  font-size: 22px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  position: relative;
-  z-index: 2;
-}
-.checkmark {
-  color: #10b981;
-  font-size: 18px;
-  opacity: 0;
-  transform: scale(0);
-  transition: all 0.3s ease;
-}
-.room-summary {
-  color: #cbd5e1;
-  font-size: 16px;
-  width: 100%;
-  position: relative;
-  z-index: 2;
-}
-.product-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-.product-item {
-  background: rgba(30, 41, 59, 0.6);
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid #475569;
-  font-size: 14px;
-  color: #cbd5e1;
-  position: relative;
-  z-index: 2;
-}
-.no-inventory {
-  text-align: center;
-  padding: 40px;
-  color: #94a3b8;
-}
-.back-arrow {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  font-size: 18px;
-  color: #e5e7eb;
-  cursor: pointer;
-  background: rgba(30, 41, 59, 0.8);
-  padding: 10px 15px;
-  border-radius: 12px;
-  border: 2px solid #475569;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  z-index: 100;
-  text-decoration: none;
-}
-.back-arrow:hover {
-  background: rgba(51, 65, 85, 0.9);
-  transform: translateX(-3px);
-}
-.swipe-hint {
-  text-align: center;
-  color: #94a3b8;
-  font-size: 14px;
-  margin-bottom: 20px;
-  padding: 10px;
-  background: rgba(30, 41, 59, 0.3);
-  border-radius: 8px;
-}
-.room-count {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: rgba(30, 41, 59, 0.8);
-  color: #e5e7eb;
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 2px solid #475569;
-  font-size: 14px;
-  font-weight: bold;
-  z-index: 100;
-}
-.swipe-feedback {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding-left: 20px;
-  color: #10b981;
-  font-size: 16px;
-  font-weight: bold;
-  opacity: 0;
-  transform: translateX(-20px);
-  transition: all 0.3s ease;
-  z-index: 1;
-  pointer-events: none;
-}
-.swipe-feedback.red {
-  color: #ef4444;
-}
-.inventory-room-item.swiping-red .swipe-feedback {
-  opacity: 1;
-  transform: translateX(0);
-  color: #ef4444;
-}
-.inventory-room-item.swiping-green .swipe-feedback {
-  opacity: 1;
-  transform: translateX(0);
-  color: #10b981;
-}
-.swipe-progress {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  background: #ef4444;
-  border-radius: 0 0 12px 12px;
-  width: 0%;
-  transition: width 0.2s ease;
-}
-.inventory-room-item.swiping-green .swipe-progress {
-  background: #10b981;
-}
-.swipe-info {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  font-size: 12px;
-  color: #94a3b8;
-  z-index: 2;
-}
-.total-items {
-  background: rgba(30, 41, 59, 0.8);
-  color: #e5e5e7;
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 2px solid #475569;
-  font-size: 14px;
-  margin-top: 15px;
-  text-align: center;
-  cursor: pointer;
-}
-.last-updated {
-  font-size: 12px;
-  color: #94a3b8;
-  margin-top: 5px;
-}
-.sort-indicator {
-  display: inline-block;
-  margin-left: 10px;
-  font-size: 12px;
-  color: #8b5cf6;
-  background: rgba(139, 92, 246, 0.2);
-  padding: 2px 8px;
-  border-radius: 12px;
-  border: 1px solid #8b5cf6;
-}
-/* NEW: Total price display */
-.total-price-container {
-  position: fixed;
-  top: 20px;
-  right: 100px;
-  background: rgba(30, 41, 59, 0.8);
-  color: #e5e7eb;
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 2px solid #475569;
-  font-size: 14px;
-  font-weight: bold;
-  z-index: 100;
-  min-width: 120px;
-  text-align: center;
-}
-.total-price-label {
-  display: block;
-  font-size: 11px;
-  color: #94a3b8;
-  margin-bottom: 2px;
-}
-.total-price-amount {
-  display: block;
-  font-size: 16px;
-  color: #10b981;
-}
-/* NEW: Delete confirmation modal */
-.delete-confirmation-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-.delete-confirmation-modal.active {
-  opacity: 1;
-  visibility: visible;
-}
-.delete-confirmation-content {
-  background: rgba(15, 23, 42, 0.95);
-  border-radius: 16px;
-  padding: 30px;
-  max-width: 400px;
-  width: 90%;
-  border: 2px solid #475569;
-  text-align: center;
-  transform: scale(0.9);
-  transition: transform 0.3s ease;
-}
-.delete-confirmation-modal.active .delete-confirmation-content {
-  transform: scale(1);
-}
-.delete-confirmation-title {
-  color: #e5e7eb;
-  font-size: 22px;
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-.delete-confirmation-message {
-  color: #cbd5e1;
-  font-size: 16px;
-  margin-bottom: 25px;
-  line-height: 1.5;
-}
-.delete-confirmation-room {
-  color: #60a5fa;
-  font-weight: bold;
-  font-size: 24px;
-  margin: 10px 0;
-}
-.delete-confirmation-buttons {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-}
-.delete-confirm-button, .delete-cancel-button {
-  padding: 12px 30px;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  flex: 1;
-}
-.delete-confirm-button {
-  background: #ef4444;
-  color: white;
-}
-.delete-confirm-button:hover {
-  background: #dc2626;
-  transform: translateY(-2px);
-}
-.delete-cancel-button {
-  background: #475569;
-  color: white;
-}
-.delete-cancel-button:hover {
-  background: #64748b;
-  transform: translateY(-2px);
-}
-/* NEW: Hold to delete indicator */
-.hold-delete-hint {
-  position: absolute;
-  bottom: 5px;
-  left: 5px;
-  font-size: 10px;
-  color: #94a3b8;
-  background: rgba(30, 41, 59, 0.7);
-  padding: 2px 6px;
-  border-radius: 8px;
-  z-index: 2;
-  opacity: 0.7;
-}
-/* NEW: Hold feedback animation */
-@keyframes holdPulse {
-  0% {
-    background: rgba(15, 23, 42, 0.8);
-  }
-  50% {
-    background: rgba(239, 68, 68, 0.2);
-  }
-  100% {
-    background: rgba(239, 68, 68, 0.4);
-  }
-}
-.inventory-room-item.holding {
-  animation: holdPulse 1s ease-in-out infinite;
-}
-@media (max-width: 768px) {
-  .inventory-container {
-    margin-top: 45px;
-    padding: 20px;
-  }
-  .inventory-title {
-    font-size: 24px;
-  }
-  .room-number {
-    font-size: 18px;
-  }
-  .product-item {
-    font-size: 12px;
-    padding: 4px 8px;
-  }
-  .back-arrow {
-    top: 15px;
-    left: 15px;
-    padding: 8px 12px;
-  }
-  .room-count {
-    top: 15px;
-    right: 15px;
-    font-size: 12px;
-  }
-  /* NEW: Mobile adjustments for total price */
-  .total-price-container {
-    top: 15px;
-    right: 140px;
-    padding: 6px 12px;
-    min-width: 100px;
-  }
-  .total-price-label {
-    font-size: 10px;
-  }
-  .total-price-amount {
-    font-size: 14px;
-  }
-  .delete-confirmation-content {
-    padding: 20px;
-  }
-  .delete-confirmation-title {
-    font-size: 18px;
-  }
-  .delete-confirmation-message {
-    font-size: 14px;
-  }
-  .delete-confirmation-room {
-    font-size: 20px;
-  }
-  .delete-confirm-button, .delete-cancel-button {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-}
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes slideOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-}
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-.pulse {
-  animation: pulse 0.3s ease;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Minibar Pro • Inventory</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --success: #10b981;
+            --success-dark: #059669;
+            --danger: #ef4444;
+            --danger-dark: #dc2626;
+            --warning: #f59e0b;
+            --background: #0f172a;
+            --surface: rgba(30, 41, 59, 0.7);
+            --surface-light: rgba(51, 65, 85, 0.3);
+            --text: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: rgba(71, 85, 105, 0.3);
+            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            --card-shadow-hover: 0 16px 48px rgba(99, 102, 241, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            position: fixed; /* Prevents iOS bounce */
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+            -webkit-overflow-scrolling: touch;
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+
+        /* Header */
+        .app-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-stats {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stat-badge {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-badge.rooms {
+            color: #60a5fa;
+        }
+
+        .stat-badge.total {
+            color: var(--success);
+        }
+
+        /* Main Container */
+        .main-container {
+            position: fixed;
+            top: 73px; /* Header height */
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 73px);
+        }
+
+        /* Controls */
+        .controls-container {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: var(--card-shadow);
+            flex-shrink: 0;
+        }
+
+        .controls-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .control-button {
+            padding: 16px 20px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .control-button:hover::before {
+            opacity: 1;
+        }
+
+        .control-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        /* Inventory List */
+        .inventory-list-container {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .inventory-list-scroll {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            right: 24px;
+            bottom: 24px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        .inventory-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: min-content;
+        }
+
+        /* Room Card */
+        .room-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: pan-y;
+        }
+
+        .room-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgba(239, 68, 68, 0.1) 0%, 
+                rgba(239, 68, 68, 0.2) 100%);
+            transition: width 0.3s ease;
+            z-index: 1;
+        }
+
+        .room-card.swiping-red::before {
+            width: 100%;
+            background: linear-gradient(90deg, 
+                rgba(239, 68, 68, 0.2) 0%, 
+                rgba(239, 68, 68, 0.4) 100%);
+        }
+
+        .room-card.swiping-green::before {
+            width: 100%;
+            background: linear-gradient(90deg, 
+                rgba(16, 185, 129, 0.2) 0%, 
+                rgba(16, 185, 129, 0.4) 100%);
+        }
+
+        .room-card.completed {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .room-card.pending {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .room-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .room-number {
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .room-number.completed {
+            color: var(--success);
+        }
+
+        .room-number.pending {
+            color: #fca5a5;
+        }
+
+        .room-number .badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .room-number.completed .badge {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .room-number.pending .badge {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .room-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .product-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .product-tag {
+            background: rgba(30, 41, 59, 0.6);
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            transition: var(--transition);
+        }
+
+        .product-tag:hover {
+            transform: translateY(-1px);
+            border-color: var(--primary);
+        }
+
+        .room-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .room-time {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .room-price {
+            font-weight: 600;
+            color: var(--success);
+            font-size: 14px;
+        }
+
+        /* Swipe Feedback */
+        .swipe-feedback {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 24px;
+            font-size: 16px;
+            font-weight: 700;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: var(--transition);
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .swipe-feedback.complete {
+            color: var(--success);
+        }
+
+        .swipe-feedback.pending {
+            color: var(--danger);
+        }
+
+        .room-card.swiping-green .swipe-feedback.complete {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .room-card.swiping-red .swipe-feedback.pending {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .swipe-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: var(--danger);
+            border-radius: 0 0 18px 18px;
+            width: 0%;
+            transition: width 0.2s ease;
+            z-index: 3;
+        }
+
+        .room-card.swiping-green .swipe-progress {
+            background: var(--success);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .empty-subtitle {
+            font-size: 14px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        /* Delete Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            touch-action: none;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            color: var(--danger);
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .modal-message {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .modal-room {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--danger);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-btn.cancel {
+            background: rgba(71, 85, 105, 0.3);
+            color: var(--text);
+        }
+
+        .modal-btn.cancel:hover {
+            background: rgba(71, 85, 105, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .modal-btn.confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 16px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 2000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .notification.info {
+            border-left: 4px solid var(--primary);
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: calc(200px + 100%) 0; }
+        }
+
+        .pulse {
+            animation: pulse 0.3s ease;
+        }
+
+        /* Hold to Delete Indicator */
+        .hold-hint {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            font-size: 10px;
+            color: var(--text-secondary);
+            background: rgba(30, 41, 59, 0.7);
+            padding: 3px 8px;
+            border-radius: 8px;
+            z-index: 2;
+            opacity: 0.6;
+        }
+
+        /* Room Actions */
+        .room-actions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 2;
+        }
+
+        .room-action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+            touch-action: manipulation;
+        }
+
+        .room-action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text);
+            transform: scale(1.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-header {
+                padding: 12px 16px;
+            }
+            
+            .header-stats {
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 6px;
+            }
+            
+            .main-container {
+                padding: 16px;
+                top: 68px;
+                height: calc(100vh - 68px);
+            }
+            
+            .room-card {
+                padding: 16px;
+            }
+            
+            .room-number {
+                font-size: 18px;
+            }
+            
+            .product-tag {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Back Button */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 10px 16px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1001;
+            transition: var(--transition);
+            touch-action: manipulation;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-2px);
+            border-color: var(--primary);
+        }
+    </style>
 </head>
-<body class="inventory-page">
-  <a href="main.html" class="back-arrow">← უკან</a>
-  <!-- NEW: Total price display container -->
-  <div class="room-count" id="roomCount">ოთახები: 0</div>
-  <div class="total-price-container" id="totalPriceContainer">
-    <span class="total-price-label">სულ თანხა</span>
-    <span class="total-price-amount" id="totalPriceAmount">₾0.00</span>
-  </div>
-  
-  <!-- NEW: Delete confirmation modal -->
-  <div class="delete-confirmation-modal" id="deleteConfirmationModal">
-    <div class="delete-confirmation-content">
-      <h2 class="delete-confirmation-title">
-        <span>ოთახის წაშლა</span>
-      </h2>
-      <p class="delete-confirmation-message">
-        ნამდვილად გსურთ წაშალოთ ოთახი?
-      </p>
-      <div class="delete-confirmation-room" id="deleteRoomNumber"></div>
-      <div class="delete-confirmation-buttons">
-        <button class="delete-cancel-button" id="deleteCancelButton">გაუქმება</button>
-        <button class="delete-confirm-button" id="deleteConfirmButton">წაშლა</button>
-      </div>
-    </div>
-  </div>
-  
-  <div class="inventory-container">
-    <h1 class="inventory-title"> შევსება</h1>
-    <div class="inventory-controls">
-      <button class="clear-button" id="clearButton">გასუფთავება</button>
-      <button class="export-button" id="exportButton">ექსპორტი</button>
-      <button class="sort-button" id="sortButton">დალაგება</button>
-    </div>
-    <div class="inventory-list" id="inventoryList">
-      <!-- Inventory items will be loaded here -->
-    </div>
-    <div class="total-items" onclick="window.location.href='totals.html'" id="totalItems">სულ პროდუქტები: 0</div>
-  </div>
+<body>
+    <!-- Back Button -->
+    <a href="main.html" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span>უკან</span>
+    </a>
 
-  <script>
-    // Product price mapping
-    const PRODUCT_PRICES = {
-      // Beverages (400X series)
-      '4001': 4.72, // Still Water
-      '4002': 6.49, // Sparkling Water
-      '4003': 7.08, // Coca Cola
-      '4004': 15.34, // Red Bull
-      '4005': 27.14, // Jack Daniels
-      '4006': 9.44, // Fruit Juice
-      '4007': 20.00, // Cognac - Sarajishvili
-      '4008': 23.60, // Johny Walker Whisky
-      '4009': 17.70, // Finlandia Vodka
-      '4010': 150.00, // Moet Chandon
-      '4011': 15.34, // Beer
-      '4012': 15.34, // Corona Extra
-      '4013': 25.96, // Jameson
-      '4014': 59.00, // Glenmorangie Original
-      '4015': 47.20, // Hennessy
-      '4016': 49.56, // Khvanchkara
-      '4017': 43.66, // Saperavi
-      '4018': 37.76, // Tsinandali
-      '4019': 20.00, // Chacha
-      
-      // Snacks (402X series)
-      '4021': 10.62, // Chips
-      '4022': 9.44, // Peanuts
-      '4023': 2.95, // Raffaello
-      '4024': 11.80, // Honey
-      '4027': 8.26, // Snickers
-      '4028': 7.50, // M&Ms
-      
-      // Main page products (single digit IDs)
-      '1': 7.08, // Coca-Cola (0.33)
-      '2': 15.34, // Red Bull (0.25)
-      '3': 10.62, // Chips (40gr)
-      '4': 9.44, // Nuts (30gr)
-      '5': 11.80, // Honey
-      '7': 4.72, // Still Water (0.5)
-      '8': 15.34, // Heineken (0.33)
-      '9': 9.44, // Fruit Juice (0.25)
-      '10': 6.49, // Sparkling water (0.5)
-      '11': 37.76, // Tsinandali
-      '12': 47.20, // Khvanchkara
-      '13': 43.66, // Saperavi
-      '14': 20.00, // Chacha
-      '15': 150.00, // Moet
-      '30': 2.95, // Rafaelo (pack)
-      '31': 7.50, // M&M's
-      '32': 8.26, // Snickers
-      '40': 25.96, // Jameson
-      '41': 17.70, // Finlandia (0.05)
-      '42': 23.60, // Johnnie Walker
-      '43': 47.20, // Hennessy
-      '44': 27.14, // Jack Daniels
-      '45': 20.00, // Sarajishvili
-      '46': 59.00, // Glenmorangie
-      '100': 55, // Charger (no price)
-      '101': 65 // Cable (no price)
-    };
-
-    // Product sorting order - NEW
-    const PRODUCT_SORT_ORDER = {
-      '14': 1,    // Chacha
-      '4019': 1,  // Chacha (alternative ID)
-      '41': 2,    // Finlandia (0.05)
-      '4009': 2,  // Finlandia (alternative ID)
-      '42': 3,    // Johnnie Walker
-      '4008': 3,  // Johnnie Walker (alternative ID)
-      '44': 4,    // Jack Daniels
-      '4005': 4,  // Jack Daniels (alternative ID)
-      '43': 5,    // Hennessy
-      '4015': 5,  // Hennessy (alternative ID)
-      '45': 6,    // Sarajishvili
-      '4007': 6,  // Sarajishvili (alternative ID)
-      '46': 7,    // Glenmorangie
-      '4014': 7,  // Glenmorangie (alternative ID)
-      '40': 8,    // Jameson
-      '4013': 8,  // Jameson (alternative ID)
-      '11': 9,    // Tsinandali
-      '4018': 9,  // Tsinandali (alternative ID)
-      '12': 10,   // Khvanchkara
-      '4016': 10, // Khvanchkara (alternative ID)
-      '13': 11,   // Saperavi
-      '4017': 11, // Saperavi (alternative ID)
-      '15': 12,   // Moet
-      '4010': 12, // Moet (alternative ID)
-      '8': 13,    // Heineken (0.33)
-      '4011': 13, // Beer (alternative ID)
-      '9': 14,    // Fruit Juice (0.25)
-      '4006': 14, // Fruit Juice (alternative ID)
-      '30': 15,   // Raffaelo (pack)
-      '4023': 15, // Raffaello (alternative ID)
-      '4': 16,    // Nuts (30gr)
-      '4022': 16, // Peanuts (alternative ID)
-      '3': 17,    // Chips (40gr)
-      '4021': 17, // Chips (alternative ID)
-      '7': 18,    // Still Water (0.5)
-      '4001': 18, // Still Water (alternative ID)
-      '10': 19,   // Sparkling Water (0.5)
-      '4002': 19, // Sparkling Water (alternative ID)
-      '1': 20,    // Coca-Cola (0.33)
-      '4003': 20, // Coca Cola (alternative ID)
-      '2': 21,    // Red Bull (0.25)
-      '4004': 21, // Red Bull (alternative ID)
-      '32': 22,   // Snickers
-      '4027': 22, // Snickers (alternative ID)
-      '31': 23,   // M&M's
-      '4028': 23, // M&Ms (alternative ID)
-      '5': 24,    // Honey
-      '4024': 24, // Honey (alternative ID)
-      '100': 25,  // Charger
-      '101': 26   // Cable
-    };
-
-    const InventoryManager = {
-      getAllInventory() {
-        const inventory = localStorage.getItem('minibarInventory');
-        return inventory ? JSON.parse(inventory) : {};
-      },
-      getMarkedRooms() {
-        const markedRooms = localStorage.getItem('markedRooms');
-        return markedRooms ? JSON.parse(markedRooms) : [];
-      },
-      getRedRooms() {
-        const redRooms = localStorage.getItem('redRooms');
-        return redRooms ? JSON.parse(redRooms) : [];
-      },
-      markRoom(roomNumber, type = 'green') {
-        if (type === 'green') {
-          // Add to green rooms, remove from red
-          const markedRooms = this.getMarkedRooms();
-          const redRooms = this.getRedRooms();
-          if (!markedRooms.includes(roomNumber)) {
-            markedRooms.push(roomNumber);
-            localStorage.setItem('markedRooms', JSON.stringify(markedRooms));
-          }
-          const redIndex = redRooms.indexOf(roomNumber);
-          if (redIndex > -1) {
-            redRooms.splice(redIndex, 1);
-            localStorage.setItem('redRooms', JSON.stringify(redRooms));
-          }
-        } else if (type === 'red') {
-          // Add to red rooms, remove from green
-          const redRooms = this.getRedRooms();
-          const markedRooms = this.getMarkedRooms();
-          if (!redRooms.includes(roomNumber)) {
-            redRooms.push(roomNumber);
-            localStorage.setItem('redRooms', JSON.stringify(redRooms));
-          }
-          const greenIndex = markedRooms.indexOf(roomNumber);
-          if (greenIndex > -1) {
-            markedRooms.splice(greenIndex, 1);
-            localStorage.setItem('markedRooms', JSON.stringify(markedRooms));
-          }
-        }
-        return true;
-      },
-      unmarkRoom(roomNumber) {
-        // Remove from both green and red
-        const markedRooms = this.getMarkedRooms();
-        const redRooms = this.getRedRooms();
-        const greenIndex = markedRooms.indexOf(roomNumber);
-        if (greenIndex > -1) {
-          markedRooms.splice(greenIndex, 1);
-          localStorage.setItem('markedRooms', JSON.stringify(markedRooms));
-        }
-        const redIndex = redRooms.indexOf(roomNumber);
-        if (redIndex > -1) {
-          redRooms.splice(redIndex, 1);
-          localStorage.setItem('redRooms', JSON.stringify(redRooms));
-        }
-        return true;
-      },
-      isRoomMarked(roomNumber) {
-        const markedRooms = this.getMarkedRooms();
-        const redRooms = this.getRedRooms();
-        if (markedRooms.includes(roomNumber)) return 'green';
-        if (redRooms.includes(roomNumber)) return 'red';
-        return false;
-      },
-      // NEW: Delete room function
-      deleteRoom(roomNumber) {
-        // Remove from inventory
-        const allInventory = this.getAllInventory();
-        if (allInventory[roomNumber]) {
-          delete allInventory[roomNumber];
-          localStorage.setItem('minibarInventory', JSON.stringify(allInventory));
-        }
-        
-        // Remove from marked rooms
-        this.unmarkRoom(roomNumber);
-        
-        // Remove from red rooms (already handled by unmarkRoom but just to be sure)
-        const redRooms = this.getRedRooms();
-        const redIndex = redRooms.indexOf(roomNumber);
-        if (redIndex > -1) {
-          redRooms.splice(redIndex, 1);
-          localStorage.setItem('redRooms', JSON.stringify(redRooms));
-        }
-        
-        return true;
-      },
-      getAllRoomsSummary(sortBy = 'date') {
-        const allInventory = this.getAllInventory();
-        const markedRooms = this.getMarkedRooms();
-        const redRooms = this.getRedRooms();
-        const summaries = [];
-        let totalProducts = 0;
-        let totalPrice = 0; // NEW: Track total price
-        
-        Object.keys(allInventory).forEach(roomNumber => {
-          const roomInventory = allInventory[roomNumber];
-          const products = roomInventory.products || {};
-          const productItems = [];
-          let roomProductCount = 0;
-          let roomPrice = 0; // NEW: Track room price
-          let hasYellowProducts = false;
-          
-          // Get all products and prepare them for sorting
-          Object.keys(products).forEach(productId => {
-            const product = products[productId];
-            if (product.count > 0) {
-              // Check if it's a yellow product
-              const isYellow = product.type === 'yellow';
-              if (isYellow) {
-                hasYellowProducts = true;
-              }
-              
-              // Calculate price for this product
-              const productPrice = PRODUCT_PRICES[productId] || 0;
-              const productTotalPrice = productPrice * product.count;
-              roomPrice += productTotalPrice;
-              
-              productItems.push({
-                id: productId,
-                name: product.name,
-                count: product.count,
-                isYellow: isYellow,
-                price: productPrice,
-                totalPrice: productTotalPrice,
-                sortOrder: PRODUCT_SORT_ORDER[productId] || 999 // Default high number for unsorted items
-              });
-              
-              roomProductCount += product.count;
-            }
-          });
-          
-          // Sort products according to PRODUCT_SORT_ORDER - NEW
-          productItems.sort((a, b) => {
-            return a.sortOrder - b.sortOrder;
-          });
-          
-          if (productItems.length > 0) {
-            totalProducts += roomProductCount;
-            totalPrice += roomPrice; // NEW: Add to total price
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-left">
             
-            let status = 'none';
-            if (markedRooms.includes(roomNumber)) status = 'green';
-            else if (redRooms.includes(roomNumber)) status = 'red';
-            else if (hasYellowProducts) status = 'yellow';
+        </div>
+        <div class="header-stats">
+            <div class="stat-badge rooms">
+                <i class="fas fa-door-closed"></i>
+                <span id="roomCount">0 ოთახი</span>
+            </div>
+            <div class="stat-badge total">
+                <i class="fas fa-money-bill-wave"></i>
+                <span id="totalPriceAmount">₾0.00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Controls -->
+        <div class="controls-container">
             
-            summaries.push({
-              room: roomNumber,
-              products: productItems,
-              totalCount: roomProductCount,
-              totalPrice: roomPrice, // NEW: Add room price to summary
-              status: status,
-              lastUpdated: roomInventory.lastUpdated || new Date().toISOString(),
-              timestamp: new Date(roomInventory.lastUpdated || new Date()).getTime()
-            });
-          }
-        });
-        
-        const sortedSummaries = this.sortSummaries(summaries, sortBy);
-        return {
-          summaries: sortedSummaries,
-          totalProducts,
-          totalPrice, // NEW: Include total price in result
-          sortBy
+            <div class="controls-grid">
+                <button class="control-button clear-btn" id="clearButton">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>გასუფთავება</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Inventory List -->
+        <div class="inventory-list-container">
+            <div class="inventory-list-scroll" id="inventoryListScroll">
+                <div class="inventory-list" id="inventoryList">
+                    <!-- Rooms will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="modal-title">ოთახის წაშლა</h3>
+                <p class="modal-message">ნამდვილად გსურთ წაშალოთ ოთახი?</p>
+            </div>
+            <div class="modal-room" id="deleteRoomNumber">ოთახი 101</div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" id="cancelDelete">გაუქმება</button>
+                <button class="modal-btn confirm" id="confirmDelete">წაშლა</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <script>
+        // Product price mapping
+        const PRODUCT_PRICES = {
+            '4001': 4.72, '4002': 6.49, '4003': 7.08, '4004': 15.34,
+            '4005': 27.14, '4006': 9.44, '4007': 20.00, '4008': 23.60,
+            '4009': 17.70, '4010': 150.00, '4011': 15.34, '4012': 15.34,
+            '4013': 25.96, '4014': 59.00, '4015': 47.20, '4016': 49.56,
+            '4017': 43.66, '4018': 37.76, '4019': 20.00, '4021': 10.62,
+            '4022': 9.44, '4023': 2.95, '4024': 11.80, '4027': 8.26,
+            '4028': 7.50, '1': 7.08, '2': 15.34, '3': 10.62, '4': 9.44,
+            '5': 11.80, '7': 4.72, '8': 15.34, '9': 9.44, '10': 6.49,
+            '11': 37.76, '12': 47.20, '13': 43.66, '14': 20.00, '15': 150.00,
+            '30': 2.95, '31': 7.50, '32': 8.26, '40': 25.96, '41': 17.70,
+            '42': 23.60, '43': 47.20, '44': 27.14, '45': 20.00, '46': 59.00,
+            '100': 55, '101': 65
         };
-      },
-      sortSummaries(summaries, sortBy) {
-        if (sortBy === 'date') {
-          return summaries.sort((a, b) => {
-            // Put marked rooms at the BOTTOM (green then red, then none on top)
-            const statusOrder = {
-              'none': 0,
-              'red': 1,
-              'green': 2
-            };
-            if (statusOrder[a.status] !== statusOrder[b.status]) {
-              return statusOrder[a.status] - statusOrder[b.status];
-            }
-            // Then sort by timestamp (newest first)
-            return b.timestamp - a.timestamp;
-          });
-        } else if (sortBy === 'room') {
-          return summaries.sort((a, b) => {
-            // Put marked rooms at the BOTTOM
-            const statusOrder = {
-              'none': 0,
-              'red': 1,
-              'green': 2
-            };
-            if (statusOrder[a.status] !== statusOrder[b.status]) {
-              return statusOrder[a.status] - statusOrder[b.status];
-            }
-            // Then sort by room number
-            return parseInt(a.room) - parseInt(b.room);
-          });
-        } else if (sortBy === 'products') {
-          return summaries.sort((a, b) => {
-            // Put marked rooms at the BOTTOM
-            const statusOrder = {
-              'none': 0,
-              'red': 1,
-              'green': 2
-            };
-            if (statusOrder[a.status] !== statusOrder[b.status]) {
-              return statusOrder[a.status] - statusOrder[b.status];
-            }
-            // Then sort by product count (highest first)
-            return b.totalCount - a.totalCount;
-          });
-        }
-        return summaries;
-      },
-      clearAll() {
-        localStorage.setItem('minibarInventory', JSON.stringify({}));
-        localStorage.setItem('markedRooms', JSON.stringify([]));
-        localStorage.setItem('redRooms', JSON.stringify([]));
-        return true;
-      },
-      exportInventory() {
-        const allInventory = this.getAllInventory();
-        const markedRooms = this.getMarkedRooms();
-        const redRooms = this.getRedRooms();
-        const exportData = [];
-        
-        Object.keys(allInventory).forEach(roomNumber => {
-          const roomInventory = allInventory[roomNumber];
-          const products = roomInventory.products || {};
-          const productList = [];
-          
-          // Get all products first
-          const productItems = [];
-          Object.keys(products).forEach(productId => {
-            const product = products[productId];
-            if (product.count > 0) {
-              productItems.push({
-                id: productId,
-                name: product.name,
-                count: product.count,
-                sortOrder: PRODUCT_SORT_ORDER[productId] || 999
-              });
-            }
-          });
-          
-          // Sort products for export according to PRODUCT_SORT_ORDER - NEW
-          productItems.sort((a, b) => a.sortOrder - b.sortOrder);
-          
-          // Create the product list string
-          productItems.forEach(product => {
-            productList.push(`${product.count} ${product.name}`);
-          });
-          
-          if (productList.length > 0) {
-            let status = 'None';
-            if (markedRooms.includes(roomNumber)) status = 'Green';
-            else if (redRooms.includes(roomNumber)) status = 'Red';
-            
-            exportData.push({
-              room: roomNumber,
-              products: productList.join(', '),
-              status: status,
-              date: roomInventory.lastUpdated || new Date().toISOString()
-            });
-          }
-        });
-        
-        const csvContent = [
-          ['Room', 'Products', 'Status', 'Date'],
-          ...exportData.map(item => [
-            item.room,
-            item.products,
-            item.status,
-            new Date(item.date).toLocaleDateString('ka-GE')
-          ])
-        ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-        
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `minibar_inventory_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        return true;
-      }
-    };
 
-    document.addEventListener('DOMContentLoaded', function() {
-      const inventoryList = document.getElementById('inventoryList');
-      const clearButton = document.getElementById('clearButton');
-      const exportButton = document.getElementById('exportButton');
-      const sortButton = document.getElementById('sortButton');
-      const roomCount = document.getElementById('roomCount');
-      const totalItems = document.getElementById('totalItems');
-      const totalPriceAmount = document.getElementById('totalPriceAmount'); // NEW
-      
-      // NEW: Delete modal elements
-      const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
-      const deleteRoomNumber = document.getElementById('deleteRoomNumber');
-      const deleteCancelButton = document.getElementById('deleteCancelButton');
-      const deleteConfirmButton = document.getElementById('deleteConfirmButton');
-      
-      let roomToDelete = null;
-      let holdTimer = null;
-      const HOLD_DURATION = 1000; // 1 second hold to trigger delete
-      
-      // Default sort is 'date' (not 'time')
-      let currentSort = localStorage.getItem('inventorySort') || 'date';
-      const sortMethods = ['date', 'room', 'products'];
-      let sortIndex = sortMethods.indexOf(currentSort);
-      
-      updateSortButton();
-      
-      // NEW: Initialize delete modal events
-      deleteCancelButton.addEventListener('click', closeDeleteModal);
-      deleteConfirmButton.addEventListener('click', confirmDeleteRoom);
-      
-      // Close modal when clicking outside
-      deleteConfirmationModal.addEventListener('click', function(e) {
-        if (e.target === deleteConfirmationModal) {
-          closeDeleteModal();
-        }
-      });
-      
-      function closeDeleteModal() {
-        deleteConfirmationModal.classList.remove('active');
-        roomToDelete = null;
-      }
-      
-      function openDeleteModal(roomNumber) {
-        roomToDelete = roomNumber;
-        deleteRoomNumber.textContent = `ოთახი ${roomNumber}`;
-        deleteConfirmationModal.classList.add('active');
-      }
-      
-      function confirmDeleteRoom() {
-        if (roomToDelete) {
-          InventoryManager.deleteRoom(roomToDelete);
-          showNotification(`ოთახი ${roomToDelete} წაიშალა`, '#ef4444');
-          loadInventory();
-        }
-        closeDeleteModal();
-      }
-      
-      function loadInventory() {
-        const result = InventoryManager.getAllRoomsSummary(currentSort);
-        const { summaries, totalProducts, totalPrice } = result; // NEW: Get totalPrice
-        
-        inventoryList.innerHTML = '';
-        
-        if (summaries.length === 0) {
-          inventoryList.innerHTML = `
-            <div class="no-inventory">
-              <p>ჯერჯერობით არ დაგიმატებია ოთახი</p>
-              <p>შედი ოთახში და შეამოწმე</p>
-            </div>
-          `;
-          roomCount.textContent = 'ოთახები: 0';
-          totalItems.textContent = 'სულ პროდუქტები: 0';
-          totalPriceAmount.textContent = '₾0.00'; // NEW
-          return;
-        }
-        
-        roomCount.textContent = `ოთახები: ${summaries.length}`;
-        totalItems.textContent = `სულ პროდუქტები: ${totalProducts}`;
-        totalPriceAmount.textContent = `₾${totalPrice.toFixed(2)}`; // NEW
-        
-        summaries.forEach(item => {
-          const roomItem = document.createElement('div');
-          const statusClass = item.status === 'green' ? 'green' : item.status === 'red' ? 'red' : '';
-          roomItem.className = `inventory-room-item ${statusClass}`;
-          roomItem.setAttribute('data-room', item.room);
-          
-          const productItemsHTML = item.products.map(product => `
-            <span class="product-item ${product.isYellow ? 'yellow-product' : ''}">
-              ${product.count} ${product.name}
-            </span>
-          `).join('');
-          
-          const lastUpdated = new Date(item.lastUpdated);
-          const formattedTime = formatTime(lastUpdated); // CHANGED: Now uses formatTime instead of getTimeAgo
-          
-          let feedbackText = '';
-          
-          roomItem.innerHTML = `
-            <div class="swipe-feedback">${feedbackText}</div>
-            <div class="swipe-progress"></div>
-            <div class="inventory-room-header">
-              <span class="room-number">
-                ${item.status === 'green' ? '<span class="checkmark">✓</span>' : ''}
-                ოთახი ${item.room}
-                ${currentSort !== 'date' ? `<span class="sort-indicator">${getSortIndicator()}</span>` : ''}
-              </span>
-            </div>
-            <div class="room-summary">
-              <div class="product-list">
-                ${productItemsHTML}
-              </div>
-              <div class="last-updated">
-                ${formattedTime} • სულ: ${item.totalCount} პროდუქტი • ჯამი: ₾${item.totalPrice.toFixed(2)}
-              </div>
-            </div>
-          `;
-          
-          addSwipeEvents(roomItem, item.room);
-          addHoldEvents(roomItem, item.room); // NEW: Add hold events
-          inventoryList.appendChild(roomItem);
-        });
-      }
-      
-      function getSortIndicator() {
-        switch(currentSort) {
-          case 'room': return 'ოთახი';
-          case 'products': return 'რაოდენობა';
-          case 'date': return 'თარიღი';
-          default: return '';
-        }
-      }
-      
-      // CHANGED: This function now returns time in HH:MM format
-      function formatTime(date) {
-        // Get hours and minutes
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        
-        return `${hours}:${minutes}`;
-      }
-      
-      // NEW: Add hold events for deletion
-      function addHoldEvents(roomItem, roomNumber) {
-        let holdStartTime = 0;
-        let isHolding = false;
-        let isSwiping = false;
-        
-        roomItem.addEventListener('touchstart', (e) => {
-          // Reset swiping flag
-          isSwiping = false;
-          
-          // Start hold timer
-          holdStartTime = Date.now();
-          isHolding = false;
-          
-          // Set a timer for hold detection
-          holdTimer = setTimeout(() => {
-            if (!isSwiping) {
-              isHolding = true;
-              roomItem.classList.add('holding');
-              
-              // Vibrate if supported
-              if (navigator.vibrate) {
-                navigator.vibrate(50);
-              }
-              
-              // Show delete confirmation after hold
-              setTimeout(() => {
-                if (isHolding) {
-                  openDeleteModal(roomNumber);
-                  roomItem.classList.remove('holding');
+        // Product sorting order
+        const PRODUCT_SORT_ORDER = {
+            '14': 1, '4019': 1, '41': 2, '4009': 2, '42': 3, '4008': 3,
+            '44': 4, '4005': 4, '43': 5, '4015': 5, '45': 6, '4007': 6,
+            '46': 7, '4014': 7, '40': 8, '4013': 8, '11': 9, '4018': 9,
+            '12': 10, '4016': 10, '13': 11, '4017': 11, '15': 12, '4010': 12,
+            '8': 13, '4011': 13, '9': 14, '4006': 14, '30': 15, '4023': 15,
+            '4': 16, '4022': 16, '3': 17, '4021': 17, '7': 18, '4001': 18,
+            '10': 19, '4002': 19, '1': 20, '4003': 20, '2': 21, '4004': 21,
+            '32': 22, '4027': 22, '31': 23, '4028': 23, '5': 24, '4024': 24,
+            '100': 25, '101': 26
+        };
+
+        // Enhanced Inventory Manager
+        class InventoryManager {
+            static getAllInventory() {
+                const inventory = localStorage.getItem('minibarInventory');
+                return inventory ? JSON.parse(inventory) : {};
+            }
+
+            static getMarkedRooms() {
+                const markedRooms = localStorage.getItem('markedRooms');
+                return markedRooms ? JSON.parse(markedRooms) : [];
+            }
+
+            static getRedRooms() {
+                const redRooms = localStorage.getItem('redRooms');
+                return redRooms ? JSON.parse(redRooms) : [];
+            }
+
+            static markRoom(roomNumber, type = 'green') {
+                if (type === 'green') {
+                    const markedRooms = this.getMarkedRooms();
+                    const redRooms = this.getRedRooms();
+                    
+                    if (!markedRooms.includes(roomNumber)) {
+                        markedRooms.push(roomNumber);
+                        localStorage.setItem('markedRooms', JSON.stringify(markedRooms));
+                    }
+                    
+                    const redIndex = redRooms.indexOf(roomNumber);
+                    if (redIndex > -1) {
+                        redRooms.splice(redIndex, 1);
+                        localStorage.setItem('redRooms', JSON.stringify(redRooms));
+                    }
+                } else if (type === 'red') {
+                    const redRooms = this.getRedRooms();
+                    const markedRooms = this.getMarkedRooms();
+                    
+                    if (!redRooms.includes(roomNumber)) {
+                        redRooms.push(roomNumber);
+                        localStorage.setItem('redRooms', JSON.stringify(redRooms));
+                    }
+                    
+                    const greenIndex = markedRooms.indexOf(roomNumber);
+                    if (greenIndex > -1) {
+                        markedRooms.splice(greenIndex, 1);
+                        localStorage.setItem('markedRooms', JSON.stringify(markedRooms));
+                    }
                 }
-              }, 100);
+                return true;
             }
-          }, HOLD_DURATION);
-        });
-        
-        roomItem.addEventListener('touchend', (e) => {
-          // Clear hold timer
-          if (holdTimer) {
-            clearTimeout(holdTimer);
-            holdTimer = null;
-          }
-          
-          // Remove holding class
-          if (isHolding) {
-            roomItem.classList.remove('holding');
-          }
-          
-          isHolding = false;
-        });
-        
-        // Also listen for swipe start to cancel hold
-        roomItem.addEventListener('touchmove', (e) => {
-          // If there's significant movement, cancel the hold
-          if (holdTimer && (Math.abs(e.touches[0].clientX - e.touches[0].screenX) > 10 || 
-              Math.abs(e.touches[0].clientY - e.touches[0].screenY) > 10)) {
-            clearTimeout(holdTimer);
-            holdTimer = null;
-            isSwiping = true;
-          }
-        });
-      }
-      
-      function addSwipeEvents(roomItem, roomNumber) {
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchEndX = 0;
-        let touchEndY = 0;
-        let touchStartTime = 0;
-        let isSwiping = false;
-        let swipeType = null;
-        let isVerticalScroll = false;
-        let scrollThreshold = 5; // Minimum pixels to determine scroll vs swipe
-        let swipeThreshold = 30; // Minimum pixels to start a swipe
-        
-        roomItem.addEventListener('touchstart', (e) => {
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
-          touchStartTime = Date.now();
-          isSwiping = false;
-          isVerticalScroll = false;
-          e.stopPropagation(); // Prevent event from bubbling to parent
-        });
-        
-        roomItem.addEventListener('touchmove', (e) => {
-          if (!touchStartX) return;
-          
-          touchEndX = e.touches[0].clientX;
-          touchEndY = e.touches[0].clientY;
-          const deltaX = touchEndX - touchStartX;
-          const deltaY = touchEndY - touchStartY;
-          
-          // First check if it's vertical scrolling
-          if (!isSwiping && Math.abs(deltaY) > scrollThreshold) {
-            isVerticalScroll = true;
-            return; // Allow vertical scrolling
-          }
-          
-          // Check if it's a horizontal swipe (not vertical scroll)
-          if (!isVerticalScroll && Math.abs(deltaX) > swipeThreshold && Math.abs(deltaX) > Math.abs(deltaY)) {
-            isSwiping = true;
-            e.preventDefault();
-            e.stopPropagation(); // Prevent parent scrolling
-            
-            const currentStatus = InventoryManager.isRoomMarked(roomNumber);
-            
-            if (deltaX > 0) {
-              // Swipe right
-              if (currentStatus === 'green') {
-                swipeType = 'green';
-                roomItem.classList.remove('swiping-red');
-                roomItem.classList.add('swiping-green');
-              } else {
-                swipeType = 'red';
-                roomItem.classList.remove('swiping-green');
-                roomItem.classList.add('swiping-red');
-              }
-              
-              const progress = Math.min(Math.abs(deltaX) / 150, 1);
-              const progressBar = roomItem.querySelector('.swipe-progress');
-              progressBar.style.width = `${progress * 100}%`;
-              roomItem.style.transform = `translateX(${Math.min(deltaX * 0.5, 75)}px)`;
-            } else {
-              // Swipe left
-              swipeType = 'undo';
-              roomItem.classList.remove('swiping-red', 'swiping-green');
-              const progress = Math.min(Math.abs(deltaX) / 150, 1);
-              const progressBar = roomItem.querySelector('.swipe-progress');
-              progressBar.style.width = `${progress * 100}%`;
-              progressBar.style.background = '#94a3b8';
-              roomItem.style.transform = `translateX(${Math.max(deltaX * 0.5, -75)}px)`;
-            }
-          }
-        }, { passive: false });
-        
-        roomItem.addEventListener('touchend', (e) => {
-          if (!touchStartX) return;
-          
-          const touchDuration = Date.now() - touchStartTime;
-          const deltaX = touchEndX - touchStartX;
-          const deltaY = touchEndY - touchStartY;
-          const isTap = touchDuration < 250 && Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10;
-          
-          // Reset styles
-          roomItem.classList.remove('swiping-red', 'swiping-green');
-          roomItem.style.transform = '';
-          const progressBar = roomItem.querySelector('.swipe-progress');
-          progressBar.style.width = '0%';
-          progressBar.style.background = '';
-          
-          // Handle swipe if it was a significant horizontal swipe and not vertical scrolling
-          if (isSwiping && !isVerticalScroll && Math.abs(deltaX) > 100) {
-            e.preventDefault();
-            e.stopPropagation(); // Prevent click events
-            
-            if (deltaX > 0) {
-              // Swipe right
-              const currentStatus = InventoryManager.isRoomMarked(roomNumber);
-              
-              if (currentStatus === 'green') {
-                // Already green, keep it green (no change)
-                roomItem.classList.add('pulse');
-                setTimeout(() => roomItem.classList.remove('pulse'), 300);
-                showNotification(`ოთახი ${roomNumber} უკვე მონიშნულია ✓`, '#10b981');
-              } else if (currentStatus === 'red') {
-                // Change from red to green
-                InventoryManager.markRoom(roomNumber, 'green');
-                roomItem.classList.remove('red');
-                roomItem.classList.add('green');
-                roomItem.classList.add('pulse');
-                setTimeout(() => roomItem.classList.remove('pulse'), 300);
-                showNotification(`ოთახი ${roomNumber} შევსებული და აღრიცხულია ✓`, '#10b981');
-              } else {
-                // No status, mark as red
-                InventoryManager.markRoom(roomNumber, 'red');
-                roomItem.classList.add('red');
-                roomItem.classList.add('pulse');
-                setTimeout(() => roomItem.classList.remove('pulse'), 300);
-                showNotification(`ოთახი ${roomNumber} შევსებულია`, '#ef4444');
-              }
-            } else if (deltaX < 0) {
-              // Swipe left - undo
-              const currentStatus = InventoryManager.isRoomMarked(roomNumber);
-              if (currentStatus) {
-                InventoryManager.unmarkRoom(roomNumber);
-                roomItem.classList.remove('green', 'red');
-                roomItem.classList.add('pulse');
-                setTimeout(() => roomItem.classList.remove('pulse'), 300);
-                showNotification(`ოთახი ${roomNumber} მოხსნილია`, '#3b82f6');
-              }
-            }
-            
-            setTimeout(() => {
-              loadInventory();
-            }, 500);
-          } else if (isTap && !isVerticalScroll) {
-            // It's a tap - do nothing
-            e.preventDefault();
-            e.stopPropagation();
-          }
-          
-          // Reset variables
-          touchStartX = 0;
-          touchStartY = 0;
-          touchEndX = 0;
-          touchEndY = 0;
-          touchStartTime = 0;
-          isSwiping = false;
-          swipeType = null;
-          isVerticalScroll = false;
-        });
-        
-        // Prevent click events after swipe
-        roomItem.addEventListener('click', (e) => {
-          if (isSwiping) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        });
-      }
-      
-      function updateSortButton() {
-        const sortNames = {
-          'date': 'თარიღი ',
-          'room': 'ოთახი ',
-          'products': 'რაოდენობა '
-        };
-        sortButton.textContent = `დალაგება: ${sortNames[currentSort]}`;
-      }
-      
-      function cycleSortMethod() {
-        sortIndex = (sortIndex + 1) % sortMethods.length;
-        currentSort = sortMethods[sortIndex];
-        localStorage.setItem('inventorySort', currentSort);
-        updateSortButton();
-        loadInventory();
-        showNotification(`დალაგება: ${getSortName(currentSort)}`, '#8b5cf6');
-      }
-      
-      function getSortName(method) {
-        const names = {
-          'date': 'თარიღი',
-          'room': 'ოთახის ნომერი',
-          'products': 'პროდუქტების რაოდენობა'
-        };
-        return names[method] || method;
-      }
-      
-      function showNotification(message, color = '#10b981') {
-        const existingNotification = document.querySelector('.custom-notification');
-        if (existingNotification) existingNotification.remove();
-        
-        const notification = document.createElement('div');
-        notification.className = 'custom-notification';
-        notification.style.cssText = `
-          position: fixed;
-          top: 80px;
-          right: 20px;
-          background: ${color}20;
-          color: ${color === '#10b981' ? '#a7f3d0' : color === '#ef4444' ? '#fecaca' : '#e9d5ff'};
-          padding: 12px 20px;
-          border-radius: 8px;
-          border: 2px solid ${color}60;
-          z-index: 1000;
-          font-size: 14px;
-          font-weight: bold;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-          animation: slideIn 0.3s ease;
-        `;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-          notification.style.animation = 'slideOut 0.3s ease';
-          setTimeout(() => notification.remove(), 300);
-        }, 2000);
-      }
-      
-      clearButton.addEventListener('click', () => {
-        if (confirm('დარწმუნებული ხარ? ყველაფერი წაიშლება')) {
-          InventoryManager.clearAll();
-          loadInventory();
-          showNotification('ყველაფერი წაშლილია', '#ef4444');
-        }
-      });
-      
-      exportButton.addEventListener('click', () => {
-        InventoryManager.exportInventory();
-        showNotification('ინვენტარი ექსპორტირებულია', '#3b82f6');
-      });
-      
-      sortButton.addEventListener('click', cycleSortMethod);
-      
-      loadInventory();
-      setInterval(loadInventory, 10000);
-    });
-  </script>
 
-  <script>
-    // Improved scrolling and zoom prevention
-    document.addEventListener('DOMContentLoaded', function() {
-      // Prevent double-tap zoom
-      let lastTouchEnd = 0;
-      document.addEventListener('touchend', function(event) {
-        const now = Date.now();
-        if (now - lastTouchEnd <= 300) {
-          event.preventDefault();
+            static unmarkRoom(roomNumber) {
+                const markedRooms = this.getMarkedRooms();
+                const redRooms = this.getRedRooms();
+                
+                const greenIndex = markedRooms.indexOf(roomNumber);
+                if (greenIndex > -1) {
+                    markedRooms.splice(greenIndex, 1);
+                    localStorage.setItem('markedRooms', JSON.stringify(markedRooms));
+                }
+                
+                const redIndex = redRooms.indexOf(roomNumber);
+                if (redIndex > -1) {
+                    redRooms.splice(redIndex, 1);
+                    localStorage.setItem('redRooms', JSON.stringify(redRooms));
+                }
+                return true;
+            }
+
+            static isRoomMarked(roomNumber) {
+                const markedRooms = this.getMarkedRooms();
+                const redRooms = this.getRedRooms();
+                if (markedRooms.includes(roomNumber)) return 'green';
+                if (redRooms.includes(roomNumber)) return 'red';
+                return false;
+            }
+
+            static deleteRoom(roomNumber) {
+                // Remove from inventory
+                const allInventory = this.getAllInventory();
+                if (allInventory[roomNumber]) {
+                    delete allInventory[roomNumber];
+                    localStorage.setItem('minibarInventory', JSON.stringify(allInventory));
+                }
+                
+                // Remove from marked rooms
+                this.unmarkRoom(roomNumber);
+                
+                return true;
+            }
+
+            static clearAll() {
+                localStorage.setItem('minibarInventory', JSON.stringify({}));
+                localStorage.setItem('markedRooms', JSON.stringify([]));
+                localStorage.setItem('redRooms', JSON.stringify([]));
+                return true;
+            }
+
+            static getAllRoomsSummary() {
+                const allInventory = this.getAllInventory();
+                const markedRooms = this.getMarkedRooms();
+                const redRooms = this.getRedRooms();
+                const summaries = [];
+                let totalProducts = 0;
+                let totalPrice = 0;
+                
+                Object.keys(allInventory).forEach(roomNumber => {
+                    const roomInventory = allInventory[roomNumber];
+                    const products = roomInventory.products || {};
+                    const productItems = [];
+                    let roomProductCount = 0;
+                    let roomPrice = 0;
+                    
+                    Object.keys(products).forEach(productId => {
+                        const product = products[productId];
+                        if (product.count > 0) {
+                            const productPrice = PRODUCT_PRICES[productId] || 0;
+                            const productTotalPrice = productPrice * product.count;
+                            roomPrice += productTotalPrice;
+                            
+                            productItems.push({
+                                id: productId,
+                                name: product.name,
+                                count: product.count,
+                                price: productPrice,
+                                totalPrice: productTotalPrice,
+                                sortOrder: PRODUCT_SORT_ORDER[productId] || 999
+                            });
+                            
+                            roomProductCount += product.count;
+                        }
+                    });
+                    
+                    productItems.sort((a, b) => a.sortOrder - b.sortOrder);
+                    
+                    if (productItems.length > 0) {
+                        totalProducts += roomProductCount;
+                        totalPrice += roomPrice;
+                        
+                        let status = 'none';
+                        if (markedRooms.includes(roomNumber)) status = 'green';
+                        else if (redRooms.includes(roomNumber)) status = 'red';
+                        
+                        summaries.push({
+                            room: roomNumber,
+                            products: productItems,
+                            totalCount: roomProductCount,
+                            totalPrice: roomPrice,
+                            status: status,
+                            lastUpdated: roomInventory.lastUpdated || new Date().toISOString(),
+                            timestamp: new Date(roomInventory.lastUpdated || new Date()).getTime()
+                        });
+                    }
+                });
+                
+                // Always sort by date (newest first) and status
+                const sortedSummaries = summaries.sort((a, b) => {
+                    const statusOrder = { 'none': 0, 'red': 1, 'green': 2 };
+                    if (statusOrder[a.status] !== statusOrder[b.status]) {
+                        return statusOrder[a.status] - statusOrder[b.status];
+                    }
+                    return b.timestamp - a.timestamp;
+                });
+                
+                return {
+                    summaries: sortedSummaries,
+                    totalProducts,
+                    totalPrice
+                };
+            }
         }
-        lastTouchEnd = now;
-      }, false);
-      
-      // Prevent zoom gestures
-      document.addEventListener('gesturestart', function(event) {
-        event.preventDefault();
-      });
-      
-      // Prevent multiple touch zoom
-      document.addEventListener('touchstart', function(event) {
-        if (event.touches.length > 1) {
-          event.preventDefault();
+
+        // UI Manager
+        class UIManager {
+            constructor() {
+                this.inventoryList = document.getElementById('inventoryList');
+                this.inventoryListScroll = document.getElementById('inventoryListScroll');
+                this.clearButton = document.getElementById('clearButton');
+                this.roomCount = document.getElementById('roomCount');
+                this.totalPriceAmount = document.getElementById('totalPriceAmount');
+                this.deleteModal = document.getElementById('deleteModal');
+                this.deleteRoomNumber = document.getElementById('deleteRoomNumber');
+                this.cancelDelete = document.getElementById('cancelDelete');
+                this.confirmDelete = document.getElementById('confirmDelete');
+                
+                this.roomToDelete = null;
+                this.holdTimer = null;
+                this.HOLD_DURATION = 800; // Reduced for iPhone
+                this.isScrolling = false;
+                this.scrollStartY = 0;
+                this.touchStartTime = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                this.loadInventory();
+                this.setupEventListeners();
+                setInterval(() => this.loadInventory(), 10000);
+            }
+            
+            loadInventory() {
+                const result = InventoryManager.getAllRoomsSummary();
+                const { summaries, totalProducts, totalPrice } = result;
+                
+                this.inventoryList.innerHTML = '';
+                
+                if (summaries.length === 0) {
+                    this.inventoryList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-inbox"></i>
+                            </div>
+                            <h3 class="empty-title">ინვენტარი ცარიელია</h3>
+                            <p class="empty-subtitle">დაამატეთ პროდუქტები ოთახებში რომ დაიწყოთ</p>
+                        </div>
+                    `;
+                    this.roomCount.textContent = '0 ოთახი';
+                    this.totalPriceAmount.textContent = '₾0.00';
+                    return;
+                }
+                
+                this.roomCount.textContent = `${summaries.length} ოთახი`;
+                this.totalPriceAmount.textContent = `₾${totalPrice.toFixed(2)}`;
+                
+                summaries.forEach(item => {
+                    const roomCard = this.createRoomCard(item);
+                    this.inventoryList.appendChild(roomCard);
+                });
+            }
+            
+            createRoomCard(item) {
+                const card = document.createElement('div');
+                const statusClass = item.status === 'green' ? 'completed' : item.status === 'red' ? 'pending' : '';
+                
+                card.className = `room-card ${statusClass}`;
+                card.setAttribute('data-room', item.room);
+                
+                const productTags = item.products.map(product => `
+                    <span class="product-tag">
+                        ${product.count}  ${product.name}
+                    </span>
+                `).join('');
+                
+                const lastUpdated = new Date(item.lastUpdated);
+                const formattedTime = this.formatTime(lastUpdated);
+                
+                card.innerHTML = `
+                    <div class="swipe-feedback complete">
+                        <i class="fas fa-check-circle"></i>
+                        <span>დასრულებული</span>
+                    </div>
+                    <div class="swipe-feedback pending">
+                        <i class="fas fa-clock"></i>
+                        <span>მოლოდინში</span>
+                    </div>
+                    <div class="swipe-progress"></div>
+                    
+                    
+                    <div class="room-card-header">
+                        <div class="room-number ${statusClass}">
+                            <i class="fas fa-door-closed"></i>
+                            ოთახი ${item.room}
+                            ${statusClass ? `<span class="badge">${statusClass === 'completed' ? 'დასრულებული' : 'მოლოდინში'}</span>` : ''}
+                        </div>
+                        <div class="room-actions">
+                            <div class="room-action-btn delete-btn" title="წაშლა">
+                                <i class="fas fa-trash-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="room-content">
+                        <div class="product-tags">
+                            ${productTags}
+                        </div>
+                        <div class="room-meta">
+                            <div class="room-time">
+                                <i class="far fa-clock"></i>
+                                <span>${formattedTime}</span>
+                                <span>•</span>
+                                <span>${item.totalCount} პროდუქტი</span>
+                            </div>
+                            <div class="room-price">₾${item.totalPrice.toFixed(2)}</div>
+                        </div>
+                    </div>
+                `;
+                
+                this.setupCardEvents(card, item.room);
+                return card;
+            }
+            
+            setupCardEvents(card, roomNumber) {
+                let touchStartX = 0;
+                let touchStartY = 0;
+                let touchEndX = 0;
+                let touchEndY = 0;
+                let isSwiping = false;
+                let isVerticalScroll = false;
+                let scrollThreshold = 5;
+                let swipeThreshold = 30;
+                
+                // Delete button
+                const deleteBtn = card.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    this.openDeleteModal(roomNumber);
+                });
+                
+                // Prevent text selection on iOS
+                card.addEventListener('touchstart', (e) => {
+                    if (e.touches.length > 1) return;
+                    
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    this.touchStartTime = Date.now();
+                    isSwiping = false;
+                    isVerticalScroll = false;
+                    
+                    // Store initial scroll position
+                    this.scrollStartY = this.inventoryListScroll.scrollTop;
+                    
+                    // Start hold timer for delete
+                    this.holdTimer = setTimeout(() => {
+                        if (!isSwiping && !this.isScrolling) {
+                            this.vibrate(50);
+                            card.classList.add('pulse');
+                            this.openDeleteModal(roomNumber);
+                        }
+                    }, this.HOLD_DURATION);
+                    
+                    e.stopPropagation();
+                }, { passive: false });
+                
+                card.addEventListener('touchmove', (e) => {
+                    if (!touchStartX || e.touches.length > 1) return;
+                    
+                    touchEndX = e.touches[0].clientX;
+                    touchEndY = e.touches[0].clientY;
+                    const deltaX = touchEndX - touchStartX;
+                    const deltaY = touchEndY - touchStartY;
+                    
+                    // Check if scrolling is happening in the container
+                    const currentScrollY = this.inventoryListScroll.scrollTop;
+                    const scrollDelta = Math.abs(currentScrollY - this.scrollStartY);
+                    
+                    if (scrollDelta > 5) {
+                        this.isScrolling = true;
+                        clearTimeout(this.holdTimer);
+                        this.holdTimer = null;
+                        return;
+                    }
+                    
+                    // Cancel hold timer if moving
+                    if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+                        clearTimeout(this.holdTimer);
+                        this.holdTimer = null;
+                    }
+                    
+                    // Vertical scroll detection
+                    if (!isSwiping && Math.abs(deltaY) > scrollThreshold) {
+                        isVerticalScroll = true;
+                        this.isScrolling = true;
+                        return;
+                    }
+                    
+                    // Horizontal swipe detection
+                    if (!isVerticalScroll && Math.abs(deltaX) > swipeThreshold && Math.abs(deltaX) > Math.abs(deltaY)) {
+                        isSwiping = true;
+                        e.preventDefault();
+                        
+                        const currentStatus = InventoryManager.isRoomMarked(roomNumber);
+                        
+                        if (deltaX > 0) {
+                            // Swipe right
+                            card.classList.remove('swiping-red');
+                            card.classList.add('swiping-green');
+                            
+                            const progress = Math.min(Math.abs(deltaX) / 150, 1);
+                            const progressBar = card.querySelector('.swipe-progress');
+                            progressBar.style.width = `${progress * 100}%`;
+                            card.style.transform = `translateX(${Math.min(deltaX * 0.5, 75)}px)`;
+                        } else {
+                            // Swipe left
+                            card.classList.remove('swiping-green', 'swiping-red');
+                            const progress = Math.min(Math.abs(deltaX) / 150, 1);
+                            const progressBar = card.querySelector('.swipe-progress');
+                            progressBar.style.width = `${progress * 100}%`;
+                            progressBar.style.background = '#94a3b8';
+                            card.style.transform = `translateX(${Math.max(deltaX * 0.5, -75)}px)`;
+                        }
+                    }
+                }, { passive: false });
+                
+                card.addEventListener('touchend', (e) => {
+                    clearTimeout(this.holdTimer);
+                    this.holdTimer = null;
+                    
+                    if (!touchStartX) return;
+                    
+                    const touchDuration = Date.now() - this.touchStartTime;
+                    const deltaX = touchEndX - touchStartX;
+                    
+                    // Reset styles
+                    card.classList.remove('swiping-red', 'swiping-green', 'pulse');
+                    card.style.transform = '';
+                    const progressBar = card.querySelector('.swipe-progress');
+                    progressBar.style.width = '0%';
+                    progressBar.style.background = '';
+                    
+                    // Handle swipe if not scrolling
+                    if (isSwiping && !this.isScrolling && Math.abs(deltaX) > 100) {
+                        e.preventDefault();
+                        this.handleSwipe(roomNumber, deltaX > 0, card);
+                    }
+                    
+                    // Reset
+                    touchStartX = 0;
+                    touchStartY = 0;
+                    touchEndX = 0;
+                    touchEndY = 0;
+                    isSwiping = false;
+                    isVerticalScroll = false;
+                    this.isScrolling = false;
+                });
+                
+                // Prevent context menu on long press
+                card.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    return false;
+                });
+            }
+            
+            handleSwipe(roomNumber, isRightSwipe, card) {
+                const currentStatus = InventoryManager.isRoomMarked(roomNumber);
+                
+                if (isRightSwipe) {
+                    if (currentStatus === 'green') {
+                        this.showNotification(`ოთახი ${roomNumber} უკვე დასრულებულია`, 'success');
+                    } else if (currentStatus === 'red') {
+                        InventoryManager.markRoom(roomNumber, 'green');
+                        this.showNotification(`ოთახი ${roomNumber} დასრულებულია`, 'success');
+                    } else {
+                        InventoryManager.markRoom(roomNumber, 'red');
+                        this.showNotification(`ოთახი ${roomNumber} მოლოდინშია`, 'error');
+                    }
+                } else {
+                    // Swipe left - undo
+                    if (currentStatus) {
+                        InventoryManager.unmarkRoom(roomNumber);
+                        this.showNotification(`ოთახი ${roomNumber} განახლებულია`, 'info');
+                    }
+                }
+                
+                this.vibrate(30);
+                setTimeout(() => this.loadInventory(), 300);
+            }
+            
+            openDeleteModal(roomNumber) {
+                this.roomToDelete = roomNumber;
+                this.deleteRoomNumber.textContent = `ოთახი ${roomNumber}`;
+                this.deleteModal.classList.add('active');
+            }
+            
+            closeDeleteModal() {
+                this.deleteModal.classList.remove('active');
+                this.roomToDelete = null;
+            }
+            
+            formatTime(date) {
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                return `${hours}:${minutes}`;
+            }
+            
+            showNotification(message, type = 'info') {
+                const container = document.getElementById('notificationContainer');
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                `;
+                
+                container.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 10);
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+            
+            vibrate(duration) {
+                if (navigator.vibrate) {
+                    navigator.vibrate(duration);
+                }
+            }
+            
+            setupEventListeners() {
+                // Clear button
+                this.clearButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm('დარწმუნებული ხარ? ყველა ოთახი წაიშლება!')) {
+                        InventoryManager.clearAll();
+                        this.loadInventory();
+                        this.showNotification('ინვენტარი გასუფთავდა', 'success');
+                        this.vibrate(100);
+                    }
+                });
+                
+                // Delete modal buttons
+                this.cancelDelete.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.closeDeleteModal();
+                });
+                
+                this.confirmDelete.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (this.roomToDelete) {
+                        InventoryManager.deleteRoom(this.roomToDelete);
+                        this.showNotification(`ოთახი ${this.roomToDelete} წაიშალა`, 'error');
+                        this.vibrate(100);
+                        this.loadInventory();
+                    }
+                    this.closeDeleteModal();
+                });
+                
+                // Close modal on outside click
+                this.deleteModal.addEventListener('click', (e) => {
+                    if (e.target === this.deleteModal) {
+                        this.closeDeleteModal();
+                    }
+                });
+                
+                // Handle scrolling
+                this.inventoryListScroll.addEventListener('scroll', () => {
+                    this.isScrolling = true;
+                    clearTimeout(this.holdTimer);
+                    this.holdTimer = null;
+                });
+                
+                // Reset scrolling flag
+                this.inventoryListScroll.addEventListener('touchend', () => {
+                    setTimeout(() => {
+                        this.isScrolling = false;
+                    }, 100);
+                });
+            }
         }
-      }, { passive: false });
-      
-      // Modified: Allow single-finger scrolling, prevent only pinch zoom
-      document.addEventListener('touchmove', function(event) {
-        // Only prevent if it's a pinch zoom (2+ fingers)
-        if (event.touches.length > 1) {
-          event.preventDefault();
-        }
-        // Allow single-finger scrolling
-      }, { passive: false });
-      
-      // Ensure scrolling works properly on the inventory list
-      const inventoryList = document.getElementById('inventoryList');
-      if (inventoryList) {
-        inventoryList.addEventListener('touchmove', function(e) {
-          // Allow all touch movements in the inventory list
-        }, { passive: true });
-      }
-    });
-  </script>
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const uiManager = new UIManager();
+            
+            // Prevent text selection on iOS
+            document.addEventListener('selectstart', (e) => {
+                e.preventDefault();
+                return false;
+            });
+            
+            // Prevent zoom
+            document.addEventListener('touchstart', (e) => {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Prevent iOS bounce
+            document.addEventListener('touchmove', (e) => {
+                if (!e.target.closest('.inventory-list-scroll')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Prevent context menu
+            document.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                return false;
+            });
+            
+            // Prevent double tap zoom
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', (e) => {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+        });
+    </script>
 </body>
 </html>
