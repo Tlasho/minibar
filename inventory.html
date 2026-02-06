@@ -351,6 +351,120 @@ body {
   font-size: 16px;
   color: #10b981;
 }
+/* NEW: Delete confirmation modal */
+.delete-confirmation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+.delete-confirmation-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+.delete-confirmation-content {
+  background: rgba(15, 23, 42, 0.95);
+  border-radius: 16px;
+  padding: 30px;
+  max-width: 400px;
+  width: 90%;
+  border: 2px solid #475569;
+  text-align: center;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+.delete-confirmation-modal.active .delete-confirmation-content {
+  transform: scale(1);
+}
+.delete-confirmation-title {
+  color: #e5e7eb;
+  font-size: 22px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.delete-confirmation-message {
+  color: #cbd5e1;
+  font-size: 16px;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+.delete-confirmation-room {
+  color: #60a5fa;
+  font-weight: bold;
+  font-size: 24px;
+  margin: 10px 0;
+}
+.delete-confirmation-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+.delete-confirm-button, .delete-cancel-button {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+.delete-confirm-button {
+  background: #ef4444;
+  color: white;
+}
+.delete-confirm-button:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
+.delete-cancel-button {
+  background: #475569;
+  color: white;
+}
+.delete-cancel-button:hover {
+  background: #64748b;
+  transform: translateY(-2px);
+}
+/* NEW: Hold to delete indicator */
+.hold-delete-hint {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  font-size: 10px;
+  color: #94a3b8;
+  background: rgba(30, 41, 59, 0.7);
+  padding: 2px 6px;
+  border-radius: 8px;
+  z-index: 2;
+  opacity: 0.7;
+}
+/* NEW: Hold feedback animation */
+@keyframes holdPulse {
+  0% {
+    background: rgba(15, 23, 42, 0.8);
+  }
+  50% {
+    background: rgba(239, 68, 68, 0.2);
+  }
+  100% {
+    background: rgba(239, 68, 68, 0.4);
+  }
+}
+.inventory-room-item.holding {
+  animation: holdPulse 1s ease-in-out infinite;
+}
 @media (max-width: 768px) {
   .inventory-container {
     margin-top: 45px;
@@ -387,6 +501,22 @@ body {
     font-size: 10px;
   }
   .total-price-amount {
+    font-size: 14px;
+  }
+  .delete-confirmation-content {
+    padding: 20px;
+  }
+  .delete-confirmation-title {
+    font-size: 18px;
+  }
+  .delete-confirmation-message {
+    font-size: 14px;
+  }
+  .delete-confirmation-room {
+    font-size: 20px;
+  }
+  .delete-confirm-button, .delete-cancel-button {
+    padding: 10px 20px;
     font-size: 14px;
   }
 }
@@ -434,6 +564,24 @@ body {
     <span class="total-price-label">სულ თანხა</span>
     <span class="total-price-amount" id="totalPriceAmount">₾0.00</span>
   </div>
+  
+  <!-- NEW: Delete confirmation modal -->
+  <div class="delete-confirmation-modal" id="deleteConfirmationModal">
+    <div class="delete-confirmation-content">
+      <h2 class="delete-confirmation-title">
+        <span>ოთახის წაშლა</span>
+      </h2>
+      <p class="delete-confirmation-message">
+        ნამდვილად გსურთ წაშალოთ ოთახი?
+      </p>
+      <div class="delete-confirmation-room" id="deleteRoomNumber"></div>
+      <div class="delete-confirmation-buttons">
+        <button class="delete-cancel-button" id="deleteCancelButton">გაუქმება</button>
+        <button class="delete-confirm-button" id="deleteConfirmButton">წაშლა</button>
+      </div>
+    </div>
+  </div>
+  
   <div class="inventory-container">
     <h1 class="inventory-title"> შევსება</h1>
     <div class="inventory-controls">
@@ -627,6 +775,28 @@ body {
         if (markedRooms.includes(roomNumber)) return 'green';
         if (redRooms.includes(roomNumber)) return 'red';
         return false;
+      },
+      // NEW: Delete room function
+      deleteRoom(roomNumber) {
+        // Remove from inventory
+        const allInventory = this.getAllInventory();
+        if (allInventory[roomNumber]) {
+          delete allInventory[roomNumber];
+          localStorage.setItem('minibarInventory', JSON.stringify(allInventory));
+        }
+        
+        // Remove from marked rooms
+        this.unmarkRoom(roomNumber);
+        
+        // Remove from red rooms (already handled by unmarkRoom but just to be sure)
+        const redRooms = this.getRedRooms();
+        const redIndex = redRooms.indexOf(roomNumber);
+        if (redIndex > -1) {
+          redRooms.splice(redIndex, 1);
+          localStorage.setItem('redRooms', JSON.stringify(redRooms));
+        }
+        
+        return true;
       },
       getAllRoomsSummary(sortBy = 'date') {
         const allInventory = this.getAllInventory();
@@ -839,12 +1009,53 @@ body {
       const totalItems = document.getElementById('totalItems');
       const totalPriceAmount = document.getElementById('totalPriceAmount'); // NEW
       
+      // NEW: Delete modal elements
+      const deleteConfirmationModal = document.getElementById('deleteConfirmationModal');
+      const deleteRoomNumber = document.getElementById('deleteRoomNumber');
+      const deleteCancelButton = document.getElementById('deleteCancelButton');
+      const deleteConfirmButton = document.getElementById('deleteConfirmButton');
+      
+      let roomToDelete = null;
+      let holdTimer = null;
+      const HOLD_DURATION = 1000; // 1 second hold to trigger delete
+      
       // Default sort is 'date' (not 'time')
       let currentSort = localStorage.getItem('inventorySort') || 'date';
       const sortMethods = ['date', 'room', 'products'];
       let sortIndex = sortMethods.indexOf(currentSort);
       
       updateSortButton();
+      
+      // NEW: Initialize delete modal events
+      deleteCancelButton.addEventListener('click', closeDeleteModal);
+      deleteConfirmButton.addEventListener('click', confirmDeleteRoom);
+      
+      // Close modal when clicking outside
+      deleteConfirmationModal.addEventListener('click', function(e) {
+        if (e.target === deleteConfirmationModal) {
+          closeDeleteModal();
+        }
+      });
+      
+      function closeDeleteModal() {
+        deleteConfirmationModal.classList.remove('active');
+        roomToDelete = null;
+      }
+      
+      function openDeleteModal(roomNumber) {
+        roomToDelete = roomNumber;
+        deleteRoomNumber.textContent = `ოთახი ${roomNumber}`;
+        deleteConfirmationModal.classList.add('active');
+      }
+      
+      function confirmDeleteRoom() {
+        if (roomToDelete) {
+          InventoryManager.deleteRoom(roomToDelete);
+          showNotification(`ოთახი ${roomToDelete} წაიშალა`, '#ef4444');
+          loadInventory();
+        }
+        closeDeleteModal();
+      }
       
       function loadInventory() {
         const result = InventoryManager.getAllRoomsSummary(currentSort);
@@ -907,6 +1118,7 @@ body {
           `;
           
           addSwipeEvents(roomItem, item.room);
+          addHoldEvents(roomItem, item.room); // NEW: Add hold events
           inventoryList.appendChild(roomItem);
         });
       }
@@ -927,6 +1139,69 @@ body {
         const minutes = date.getMinutes().toString().padStart(2, '0');
         
         return `${hours}:${minutes}`;
+      }
+      
+      // NEW: Add hold events for deletion
+      function addHoldEvents(roomItem, roomNumber) {
+        let holdStartTime = 0;
+        let isHolding = false;
+        let isSwiping = false;
+        
+        roomItem.addEventListener('touchstart', (e) => {
+          // Reset swiping flag
+          isSwiping = false;
+          
+          // Start hold timer
+          holdStartTime = Date.now();
+          isHolding = false;
+          
+          // Set a timer for hold detection
+          holdTimer = setTimeout(() => {
+            if (!isSwiping) {
+              isHolding = true;
+              roomItem.classList.add('holding');
+              
+              // Vibrate if supported
+              if (navigator.vibrate) {
+                navigator.vibrate(50);
+              }
+              
+              // Show delete confirmation after hold
+              setTimeout(() => {
+                if (isHolding) {
+                  openDeleteModal(roomNumber);
+                  roomItem.classList.remove('holding');
+                }
+              }, 100);
+            }
+          }, HOLD_DURATION);
+        });
+        
+        roomItem.addEventListener('touchend', (e) => {
+          // Clear hold timer
+          if (holdTimer) {
+            clearTimeout(holdTimer);
+            holdTimer = null;
+          }
+          
+          // Remove holding class
+          if (isHolding) {
+            roomItem.classList.remove('holding');
+          }
+          
+          isHolding = false;
+        });
+        
+        // Also listen for swipe start to cancel hold
+        roomItem.addEventListener('touchmove', (e) => {
+          // If there's significant movement, cancel the hold
+          if (holdTimer && (Math.abs(e.touches[0].clientX - e.touches[0].screenX) > 10 || 
+              Math.abs(e.touches[0].clientY - e.touches[0].screenY) > 10)) {
+            clearTimeout(holdTimer);
+            holdTimer = null;
+            isSwiping = true;
+          }
+        });
       }
       
       function addSwipeEvents(roomItem, roomNumber) {
