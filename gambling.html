@@ -45,6 +45,7 @@
     -ms-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
+    touch-action: pan-y;
 }
 
 html, body {
@@ -56,6 +57,7 @@ html, body {
     color: var(--text);
     line-height: 1.6;
     position: relative;
+    overscroll-behavior: none;
 }
 
 /* Animated Background */
@@ -129,6 +131,40 @@ body::after {
 
 .back-button:active {
     transform: translateX(-2px) scale(0.98);
+}
+
+/* Clear Button on Main Page */
+.main-clear-button {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: var(--gradient-danger);
+    backdrop-filter: blur(15px) saturate(180%);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 14px;
+    padding: 10px 16px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1001;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    touch-action: manipulation;
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+    cursor: pointer;
+    border: none;
+}
+
+.main-clear-button:hover {
+    background: var(--danger-dark);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4), 0 0 30px rgba(239, 68, 68, 0.3);
+}
+
+.main-clear-button:active {
+    transform: translateY(0) scale(0.98);
 }
 
 /* Main Container */
@@ -236,7 +272,7 @@ body::after {
 /* Main Controls */
 .main-controls {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 20px;
     margin-top: auto;
     flex-shrink: 0;
@@ -294,16 +330,6 @@ body::after {
     box-shadow: 0 12px 35px rgba(139, 92, 246, 0.5), 0 0 40px rgba(139, 92, 246, 0.3);
 }
 
-.clear-btn {
-    background: var(--gradient-danger);
-    color: white;
-    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-}
-
-.clear-btn:hover {
-    box-shadow: 0 12px 35px rgba(239, 68, 68, 0.5), 0 0 40px rgba(239, 68, 68, 0.3);
-}
-
 /* MODALS - Full Screen */
 .modal {
     position: fixed;
@@ -339,7 +365,7 @@ body::after {
     left: 0;
     right: 0;
     bottom: 0;
-    padding: 100px 24px 24px;
+    padding: 80px 24px 24px;
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
@@ -351,8 +377,8 @@ body::after {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
     border-bottom: 1px solid var(--border);
     position: relative;
     z-index: 1;
@@ -371,16 +397,16 @@ body::after {
 }
 
 .modal-title {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 800;
     color: var(--text);
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
 }
 
 .modal-title i {
-    font-size: 32px;
+    font-size: 24px;
     background: var(--gradient);
     -webkit-background-clip: text;
     background-clip: text;
@@ -389,20 +415,20 @@ body::after {
 
 .modal-controls {
     display: flex;
-    gap: 16px;
+    gap: 12px;
 }
 
 .modal-button {
-    padding: 14px 28px;
+    padding: 12px 20px;
     border: none;
-    border-radius: 14px;
-    font-size: 16px;
+    border-radius: 12px;
+    font-size: 14px;
     font-weight: 700;
     cursor: pointer;
     transition: var(--transition);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     background: var(--glass);
     border: 1px solid var(--glass-border);
     color: var(--text);
@@ -437,7 +463,9 @@ body::after {
     border: 1px solid var(--border);
     box-shadow: var(--card-shadow);
     flex: 1;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     position: relative;
 }
 
@@ -451,21 +479,19 @@ body::after {
 }
 
 .floor-products-scroll {
-    position: absolute;
-    top: 24px;
-    left: 24px;
-    right: 24px;
-    bottom: 24px;
+    flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     z-index: 1;
+    overflow-x: hidden;
+    padding: 20px;
 }
 
 .floor-products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 20px;
+    gap: 16px;
     min-height: min-content;
 }
 
@@ -477,7 +503,9 @@ body::after {
     border: 1px solid var(--border);
     box-shadow: var(--card-shadow);
     flex: 1;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     position: relative;
 }
 
@@ -491,34 +519,32 @@ body::after {
 }
 
 .totals-scroll {
-    position: absolute;
-    top: 24px;
-    left: 24px;
-    right: 24px;
-    bottom: 24px;
+    flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     z-index: 1;
+    overflow-x: hidden;
+    padding: 20px;
 }
 
 .totals-grid {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
 }
 
 /* Product Card in Floor Modal */
 .modal-product-card {
     background: var(--glass);
     backdrop-filter: blur(15px) saturate(180%);
-    border-radius: 20px;
+    border-radius: 18px;
     border: 1px solid var(--glass-border);
-    padding: 20px;
+    padding: 16px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .modal-product-card::before {
@@ -534,7 +560,7 @@ body::after {
 }
 
 .modal-product-card:hover {
-    transform: translateY(-6px) scale(1.02);
+    transform: translateY(-4px) scale(1.02);
     border-color: var(--primary);
     box-shadow: var(--card-shadow-hover), var(--glow);
 }
@@ -550,50 +576,50 @@ body::after {
 .modal-product-header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 16px;
     position: relative;
     z-index: 1;
 }
 
 .modal-product-image {
-    width: 60px;
-    height: 60px;
-    border-radius: 14px;
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
     object-fit: cover;
     border: 2px solid var(--border);
     background: rgba(30, 41, 59, 0.8);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
     transition: var(--transition);
 }
 
 .modal-product-card:hover .modal-product-image {
     border-color: var(--primary);
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
 }
 
 .modal-product-name {
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--text);
     flex: 1;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.2px;
 }
 
 /* Total Item in Totals Modal */
 .total-item {
     background: var(--glass);
     backdrop-filter: blur(15px) saturate(180%);
-    border-radius: 18px;
+    border-radius: 16px;
     border: 1px solid var(--glass-border);
-    padding: 25px;
+    padding: 20px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
     cursor: pointer;
 }
 
@@ -610,7 +636,7 @@ body::after {
 }
 
 .total-item:hover {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
     border-color: var(--primary);
     box-shadow: var(--card-shadow-hover), var(--glow);
 }
@@ -620,26 +646,26 @@ body::after {
 }
 
 .total-product-name {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--text);
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
 }
 
 .total-product-image {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
     object-fit: cover;
     border: 2px solid var(--border);
     background: rgba(30, 41, 59, 0.8);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
 .total-count {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 800;
     background: var(--gradient);
     -webkit-background-clip: text;
@@ -647,22 +673,22 @@ body::after {
     -webkit-text-fill-color: transparent;
 }
 
-/* Counter in Floor Modal */
+/* Counter in Floor Modal - SMALLER BUTTONS */
 .modal-counter-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
     position: relative;
     z-index: 1;
 }
 
 .modal-counter-button {
-    width: 50px;
-    height: 50px;
-    border-radius: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
     border: none;
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 800;
     cursor: pointer;
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -673,7 +699,7 @@ body::after {
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .modal-counter-button::before {
@@ -694,7 +720,7 @@ body::after {
 
 .modal-counter-button:active {
     transform: scale(0.92);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .modal-counter-button.minus {
@@ -703,7 +729,7 @@ body::after {
 }
 
 .modal-counter-button.minus:hover {
-    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4), 0 0 30px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4), 0 0 20px rgba(239, 68, 68, 0.3);
 }
 
 .modal-counter-button.plus {
@@ -712,22 +738,22 @@ body::after {
 }
 
 .modal-counter-button.plus:hover {
-    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4), 0 0 30px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4), 0 0 20px rgba(16, 185, 129, 0.3);
 }
 
 .modal-counter-display {
-    min-width: 70px;
+    min-width: 50px;
     text-align: center;
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 800;
-    padding: 12px;
-    border-radius: 16px;
+    padding: 8px;
+    border-radius: 14px;
     background: rgba(15, 23, 42, 0.7);
     border: 2px solid var(--border);
     transition: all 0.15s ease;
     font-feature-settings: "tnum";
     font-variant-numeric: tabular-nums;
-    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* PRODUCT DETAIL MODAL */
@@ -769,9 +795,9 @@ body::after {
     backdrop-filter: blur(25px) saturate(180%);
     border-radius: 24px;
     border: 1px solid var(--border);
-    padding: 40px;
+    padding: 30px;
     width: 100%;
-    max-width: 500px;
+    max-width: 450px;
     box-shadow: var(--card-shadow), var(--glow);
     animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1;
@@ -791,24 +817,24 @@ body::after {
 .product-detail-header {
     display: flex;
     align-items: center;
-    gap: 20px;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
     border-bottom: 1px solid var(--border);
 }
 
 .product-detail-image {
-    width: 80px;
-    height: 80px;
-    border-radius: 16px;
+    width: 70px;
+    height: 70px;
+    border-radius: 14px;
     object-fit: cover;
     border: 2px solid var(--border);
     background: rgba(30, 41, 59, 0.8);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .product-detail-name {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 800;
     color: var(--text);
     flex: 1;
@@ -817,16 +843,16 @@ body::after {
 .product-detail-close {
     background: var(--glass);
     border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    width: 40px;
-    height: 40px;
+    border-radius: 10px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text);
     cursor: pointer;
     transition: var(--transition);
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .product-detail-close:hover {
@@ -838,16 +864,16 @@ body::after {
 .floor-distribution {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
 }
 
 .floor-dist-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 16px;
     background: var(--glass);
-    border-radius: 16px;
+    border-radius: 14px;
     border: 1px solid var(--glass-border);
     transition: var(--transition);
 }
@@ -860,31 +886,31 @@ body::after {
 .floor-info {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
 }
 
 .floor-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 800;
     color: white;
     background: var(--gradient);
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
 }
 
 .floor-text {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text);
 }
 
 .floor-count {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 800;
     background: var(--gradient);
     -webkit-background-clip: text;
@@ -895,14 +921,14 @@ body::after {
 /* Empty State */
 .empty-state {
     text-align: center;
-    padding: 80px 20px;
+    padding: 60px 20px;
     color: var(--text-secondary);
     animation: fadeIn 0.6s ease;
 }
 
 .empty-icon {
-    font-size: 72px;
-    margin-bottom: 24px;
+    font-size: 60px;
+    margin-bottom: 20px;
     opacity: 0.6;
     background: var(--gradient);
     -webkit-background-clip: text;
@@ -911,16 +937,16 @@ body::after {
 }
 
 .empty-title {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     color: var(--text);
     letter-spacing: 0.5px;
 }
 
 .empty-subtitle {
-    font-size: 16px;
-    max-width: 320px;
+    font-size: 14px;
+    max-width: 280px;
     margin: 0 auto;
     line-height: 1.6;
 }
@@ -970,18 +996,18 @@ body::after {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 ::-webkit-scrollbar-track {
     background: rgba(30, 41, 59, 0.4);
-    border-radius: 10px;
-    margin: 4px;
+    border-radius: 8px;
+    margin: 2px;
 }
 
 ::-webkit-scrollbar-thumb {
     background: var(--gradient);
-    border-radius: 10px;
+    border-radius: 8px;
     border: 2px solid rgba(30, 41, 59, 0.4);
 }
 
@@ -993,7 +1019,7 @@ body::after {
 /* Responsive */
 @media (max-width: 800px) {
     .main-container {
-        padding: 90px 16px 16px;
+        padding: 80px 16px 16px;
     }
     
     .floors-container {
@@ -1002,9 +1028,9 @@ body::after {
     }
     
     .floor-button {
-        min-height: 120px;
-        font-size: 42px;
-        padding: 30px;
+        min-height: 100px;
+        font-size: 36px;
+        padding: 25px;
     }
     
     .main-controls {
@@ -1013,12 +1039,12 @@ body::after {
     }
     
     .main-control-button {
-        padding: 22px;
+        padding: 20px;
         font-size: 16px;
     }
     
     .modal-content {
-        padding: 80px 16px 16px;
+        padding: 70px 16px 16px;
     }
     
     .floor-products-grid {
@@ -1026,24 +1052,33 @@ body::after {
     }
     
     .modal-product-card {
-        padding: 16px;
+        padding: 14px;
     }
     
     .modal-counter-display {
-        font-size: 24px;
-        min-width: 60px;
-        padding: 10px;
+        font-size: 20px;
+        min-width: 45px;
+        padding: 6px;
     }
     
     .modal-counter-button {
-        width: 45px;
-        height: 45px;
-        font-size: 20px;
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
     }
     
     .back-button {
         top: 16px;
         left: 16px;
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+    
+    .main-clear-button {
+        top: 16px;
+        right: 16px;
+        padding: 8px 12px;
+        font-size: 13px;
     }
     
     .modal-controls {
@@ -1054,33 +1089,43 @@ body::after {
     .modal-button {
         width: 100%;
         justify-content: center;
+        padding: 10px 16px;
+        font-size: 13px;
     }
     
     .total-item {
-        padding: 20px;
+        padding: 16px;
     }
     
     .total-count {
-        font-size: 28px;
+        font-size: 24px;
     }
     
     .product-detail-content {
-        padding: 25px;
+        padding: 20px;
         margin: 10px;
     }
     
     .product-detail-header {
         flex-direction: column;
         text-align: center;
-        gap: 15px;
+        gap: 12px;
     }
     
     .floor-dist-item {
-        padding: 16px;
+        padding: 14px;
     }
     
     .floor-count {
-        font-size: 24px;
+        font-size: 22px;
+    }
+    
+    .page-title {
+        font-size: 28px;
+    }
+    
+    .page-subtitle {
+        font-size: 14px;
     }
 }
 </style>
@@ -1093,12 +1138,18 @@ body::after {
     <span>უკან</span>
 </a>
 
+<!-- Clear Button on Main Page -->
+<button class="main-clear-button" id="mainClearButton">
+    <i class="fas fa-trash-alt"></i>
+    <span>გასუფთავება</span>
+</button>
+
 <!-- Main Content -->
 <main class="main-container">
     <!-- Header -->
     <div class="page-header">
         <h1 class="page-title">კამორკები</h1>
-        <p class="page-subtitle">აირჩიე სართული პროდუქტების ასარჩევად</p>
+        <p class="page-subtitle">აირჩიეთ სართული პროდუქტების ასარჩევად</p>
     </div>
     
     <!-- Floor Selection -->
@@ -1117,12 +1168,8 @@ body::after {
     <!-- Main Controls -->
     <div class="main-controls">
         <button class="main-control-button totals-btn" id="totalsButton">
-            
-            <span>ჯამში შესავსებია</span>
-        </button>
-        <button class="main-control-button clear-btn" id="clearButton">
-            <i class="fas fa-trash-alt"></i>
-            <span>გასუფთავება</span>
+            <i class="fas fa-calculator"></i>
+            <span>ჯამური რაოდენობები</span>
         </button>
     </div>
 </main>
@@ -1295,7 +1342,7 @@ const allProducts = [
     { id: 46, name: "glen moray", image: "https://www.astorwines.com/images/items/01024.jpg" }
 ];
 
-// Gambling Manager
+// Gambling Manager with temporary changes
 const GamblingManager = {
     getGamblingData() {
         const gamblingData = localStorage.getItem('gamblingData');
@@ -1320,7 +1367,7 @@ const GamblingManager = {
         return true;
     },
     
-    updateProductCount(floor, productId, change) {
+    updateProductCount(floor, productId, change, temporary = false) {
         const data = this.getGamblingData();
         const current = data[`floor${floor}`][productId] || 0;
         const newCount = Math.max(0, current + change);
@@ -1331,7 +1378,9 @@ const GamblingManager = {
             data[`floor${floor}`][productId] = newCount;
         }
         
-        this.saveGamblingData(data);
+        if (!temporary) {
+            this.saveGamblingData(data);
+        }
         return newCount;
     },
     
@@ -1378,7 +1427,7 @@ const GamblingManager = {
 class UIManager {
     constructor() {
         this.totalsButton = document.getElementById('totalsButton');
-        this.clearButton = document.getElementById('clearButton');
+        this.mainClearButton = document.getElementById('mainClearButton');
         this.floorButtons = document.querySelectorAll('.floor-button');
         this.modals = {
             floor1: document.getElementById('floorModal1'),
@@ -1389,6 +1438,13 @@ class UIManager {
         };
         this.notificationContainer = document.getElementById('notificationContainer');
         this.closeDetailButton = document.getElementById('closeDetailButton');
+        
+        // Temporary storage for unsaved changes
+        this.unsavedChanges = {
+            floor1: {},
+            floor2: {},
+            floor3: {}
+        };
         
         this.init();
     }
@@ -1411,7 +1467,12 @@ class UIManager {
         
         let productsHTML = '';
         sortedProducts.forEach(product => {
-            const currentCount = GamblingManager.getProductCount(floor, product.id);
+            // Get saved count from localStorage
+            const savedCount = GamblingManager.getProductCount(floor, product.id);
+            // Get unsaved changes if any
+            const unsavedCount = this.unsavedChanges[`floor${floor}`][product.id];
+            // Use unsaved count if exists, otherwise saved count
+            const currentCount = unsavedCount !== undefined ? unsavedCount : savedCount;
             
             productsHTML += `
                 <div class="modal-product-card">
@@ -1588,16 +1649,47 @@ class UIManager {
     }
     
     handleCounterClick(floor, productId, change) {
-        const newCount = GamblingManager.updateProductCount(floor, productId, change);
+        // Store change in temporary storage (not saved to localStorage yet)
+        if (!this.unsavedChanges[`floor${floor}`][productId]) {
+            this.unsavedChanges[`floor${floor}`][productId] = GamblingManager.getProductCount(floor, productId);
+        }
+        
+        this.unsavedChanges[`floor${floor}`][productId] = Math.max(0, this.unsavedChanges[`floor${floor}`][productId] + change);
         
         // Update display in floor modal
         const countElement = document.getElementById(`count-${floor}-${productId}`);
         if (countElement) {
-            countElement.textContent = newCount;
+            countElement.textContent = this.unsavedChanges[`floor${floor}`][productId];
         }
         
         // Vibrate on mobile
         this.vibrate(15);
+    }
+    
+    saveFloorChanges(floor) {
+        // Save all temporary changes for this floor to localStorage
+        const floorChanges = this.unsavedChanges[`floor${floor}`];
+        for (const [productId, count] of Object.entries(floorChanges)) {
+            const currentCount = GamblingManager.getProductCount(floor, parseInt(productId));
+            const difference = count - currentCount;
+            if (difference !== 0) {
+                GamblingManager.updateProductCount(floor, parseInt(productId), difference);
+            }
+        }
+        
+        // Clear temporary changes for this floor
+        this.unsavedChanges[`floor${floor}`] = {};
+        
+        // Reload products to show saved state
+        this.loadFloorProducts(floor);
+    }
+    
+    discardFloorChanges(floor) {
+        // Discard temporary changes for this floor
+        this.unsavedChanges[`floor${floor}`] = {};
+        
+        // Reload products to show original saved state
+        this.loadFloorProducts(floor);
     }
     
     showNotification(message, type = 'info') {
@@ -1651,11 +1743,17 @@ class UIManager {
             this.openModal('totals');
         });
         
-        // Clear button
-        this.clearButton.addEventListener('click', (e) => {
+        // Main clear button (top right corner)
+        this.mainClearButton.addEventListener('click', (e) => {
             e.preventDefault();
             if (confirm('დარწმუნებული ხარ? ყველა მონაცემი წაიშლება')) {
                 GamblingManager.clearGamblingData();
+                // Clear all temporary changes
+                this.unsavedChanges = {
+                    floor1: {},
+                    floor2: {},
+                    floor3: {}
+                };
                 this.loadAllProducts();
                 this.showNotification('გასუფთავებულია', 'success');
                 this.vibrate(100);
@@ -1672,7 +1770,7 @@ class UIManager {
             }
         });
         
-        // Back buttons for floor modals
+        // Back buttons for floor modals - DISCARD CHANGES WITHOUT CONFIRMATION
         for (let floor = 1; floor <= 3; floor++) {
             const backButton = document.getElementById(`backButton${floor}`);
             const doneButton = document.getElementById(`doneButton${floor}`);
@@ -1680,6 +1778,8 @@ class UIManager {
             if (backButton) {
                 backButton.addEventListener('click', (e) => {
                     e.preventDefault();
+                    // Just discard changes and close without confirmation
+                    this.discardFloorChanges(floor);
                     this.closeModal(`floor${floor}`);
                 });
             }
@@ -1687,8 +1787,10 @@ class UIManager {
             if (doneButton) {
                 doneButton.addEventListener('click', (e) => {
                     e.preventDefault();
+                    // Save changes and close modal
+                    this.saveFloorChanges(floor);
                     this.closeModal(`floor${floor}`);
-                    this.showNotification('დასრულებულია', 'success');
+                    this.showNotification('შენახულია', 'success');
                 });
             }
         }
@@ -1702,12 +1804,11 @@ class UIManager {
             });
         }
         
-        // Close button for product detail modal - JUST CLOSE PRODUCT DETAIL, KEEP TOTALS OPEN
+        // Close button for product detail modal
         if (this.closeDetailButton) {
             this.closeDetailButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.closeModal('productDetail');
-                // Keep the totals modal open - don't restore overflow
             });
         }
         
@@ -1770,51 +1871,53 @@ class UIManager {
                         this.closeModal('totals');
                     } else if (modalId.startsWith('floorModal')) {
                         const floor = modalId.replace('floorModal', '');
+                        // Just discard changes and close without confirmation
+                        this.discardFloorChanges(floor);
                         this.closeModal(`floor${floor}`);
                     }
                 }
             });
         });
         
-        // Close product detail modal when clicking on backdrop - BUT KEEP TOTALS OPEN
+        // Close product detail modal when clicking on backdrop
         const productDetailBackdrop = document.querySelector('.product-detail-backdrop');
         if (productDetailBackdrop) {
             productDetailBackdrop.addEventListener('click', (e) => {
                 if (e.target === productDetailBackdrop) {
                     this.closeModal('productDetail');
-                    // Keep the totals modal open
                 }
             });
         }
+        
+        // Prevent horizontal scrolling
+        document.addEventListener('touchmove', (e) => {
+            if (Math.abs(e.touches[0].clientX - e.touches[0].screenX) > 10) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Prevent zoom
+        document.addEventListener('gesturestart', (e) => {
+            e.preventDefault();
+        });
+        
+        // Prevent text selection
+        document.addEventListener('selectstart', (e) => {
+            e.preventDefault();
+            return false;
+        });
+        
+        // Prevent context menu
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            return false;
+        });
     }
 }
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.uiManager = new UIManager();
-    
-    // Prevent default behaviors
-    document.addEventListener('selectstart', (e) => {
-        e.preventDefault();
-        return false;
-    });
-    
-    document.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        return false;
-    });
-    
-    // Prevent iOS bounce
-    document.addEventListener('touchmove', (e) => {
-        if (!e.target.closest('.floor-products-scroll') && !e.target.closest('.totals-scroll')) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-    
-    // Prevent zoom
-    document.addEventListener('gesturestart', (e) => {
-        e.preventDefault();
-    });
 });
 </script>
 </body>
