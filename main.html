@@ -4,10 +4,214 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Minibar - Inventory System</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+/* NEW DESIGN VARIABLES */
+:root {
+    --primary: #8b5cf6;
+    --primary-dark: #7c3aed;
+    --success: #10b981;
+    --success-dark: #059669;
+    --danger: #ef4444;
+    --danger-dark: #dc2626;
+    --warning: #f59e0b;
+    --background: #0f172a;
+    --surface: rgba(30, 41, 59, 0.7);
+    --surface-light: rgba(51, 65, 85, 0.3);
+    --text: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border: rgba(71, 85, 105, 0.3);
+    --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --card-shadow-hover: 0 16px 48px rgba(99, 102, 241, 0.15);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
 * {
   box-sizing: border-box;
 }
+
+/* NEW LOGIN SCREEN DESIGN */
+.login-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--background);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  transition: opacity 0.7s ease;
+  background-image: 
+      radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+}
+.login-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.login-container {
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  padding: 40px 30px;
+  box-shadow: var(--card-shadow);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.login-title {
+  font-size: 32px;
+  font-weight: 800;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+.login-subtitle {
+  color: var(--text-secondary);
+  font-size: 16px;
+  margin-bottom: 32px;
+  font-weight: 500;
+}
+.room-input {
+  width: 100%;
+  padding: 18px 20px;
+  font-size: 18px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 24px;
+  transition: var(--transition);
+  font-weight: 600;
+}
+.room-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+.room-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+.login-button {
+  width: 100%;
+  padding: 18px;
+  background: var(--gradient);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(139, 92, 246, 0.3);
+}
+.login-button:active {
+  transform: translateY(0);
+}
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+.action-button {
+  display: block;
+  padding: 16px;
+  border-radius: 14px;
+  text-decoration: none;
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+  transition: var(--transition);
+  border: 1px solid transparent;
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  color: var(--text);
+}
+.action-button:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+}
+.action-button.minus {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+.action-button.notes {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+}
+.action-button.inventory {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+.room-info {
+  margin-top: 32px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.room-category {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 8px;
+  background: rgba(30, 41, 59, 0.3);
+  border-radius: 10px;
+}
+.room-category.casino {
+  color: #fbbf24;
+}
+.room-category.four-minibar {
+  color: #60a5fa;
+}
+.error-message {
+  color: #f87171;
+  margin-top: 16px;
+  font-size: 14px;
+  min-height: 20px;
+  visibility: hidden;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.error-message.show {
+  visibility: visible;
+}
+@keyframes slideIn {
+  from {
+      opacity: 0;
+      transform: translateY(30px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+/* KEEP ALL ORIGINAL MINIBAR STYLES EXACTLY AS THEY WERE */
 /* SMALL SQUARE NOTES BUTTON ON LEFT */
 .notes-btn-left:hover {
   background: #7c3aed;
@@ -203,107 +407,6 @@ body{
 }
 .settings-item i {
   font-size: 18px;
-}
-
-/* LOGIN SCREEN */
-.login-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #0b0f1a 0%, #1e293b 100%);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px;
-  transition: opacity 0.7s ease;
-}
-.login-screen.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-.login-container {
-  background: rgba(15, 23, 42, 0.9);
-  padding: 20px 10px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  border: 2px solid #475569;
-  max-width: 400px;
-  
-  width: 90%;
-  text-align: center;
-}
-.login-title {
-  color: #e5e7eb;
-  font-size: 28px;
-  margin-bottom: 10px;
-}
-.login-subtitle {
-  color: #94a3b8;
-  font-size: 16px;
-  margin-bottom: 30px;
-}
-.room-input {
-  width: 100%;
-  padding: 16px;
-  font-size: 20px;
-  background: #1e293b;
-  border: 2px solid #475569;
-  border-radius: 10px;
-  color: #e5e7eb;
-  text-align: center;
-  margin-bottom: 20px;
-  transition: all 0.3s ease;
-}
-.room-input:focus {
-  outline: none;
-  border-color: #60a5fa;
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
-}
-.room-input::placeholder {
-  color: #64748b;
-}
-.login-button {
-  width: 100%;
-  padding: 16px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.login-button:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
-}
-.login-button:active {
-  transform: translateY(0);
-}
-.error-message {
-  color: #f87171;
-  margin-top: 15px;
-  font-size: 14px;
-  min-height: 20px;
-  visibility: hidden;
-}
-.error-message.show {
-  visibility: visible;
-}
-.valid-rooms {
-  color: #64748b;
-  font-size: 14px;
-  margin-top: 25px;
-  line-height: 1.5;
-}
-.room-category {
-  margin-bottom: 5px;
 }
 
 /* ROOM NUMBER DISPLAY - TOP CENTER */
@@ -722,7 +825,7 @@ body{
     padding: 30px 20px;
   }
   .login-title {
-    font-size: 24px;
+    font-size: 28px;
   }
   .room-display {
     font-size: 20px;
@@ -772,6 +875,48 @@ body{
 </head>
 <body>
 
+<!-- LOGIN SCREEN WITH NEW DESIGN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-container">
+    <h1 class="login-title">მინიბარი</h1>
+    <p class="login-subtitle">შეიყვანეთ ოთახის ნომერი</p>
+    
+    <input type="text" class="room-input" id="roomInput" placeholder="(მაგ. 101 ან 2201)" maxlength="4" autofocus>
+    <button class="login-button" id="loginButton">
+      <i class="fas fa-sign-in-alt"></i>
+      შესვლა
+    </button>
+
+    <div class="error-message" id="errorMessage"></div>
+
+    <div class="action-buttons">
+      <a href="minus.html" class="action-button minus">
+        <i class="fas fa-minus-circle"></i>
+        მინუსები
+      </a>
+      <a href="notes.html" class="action-button notes">
+        <i class="fas fa-edit"></i>
+        ჩაწერა
+      </a>
+      <a href="inventory.html" class="action-button inventory">
+        <i class="fas fa-clipboard-check"></i>
+        შევსება
+      </a>
+    </div>
+
+    <div class="room-info">
+      <div class="room-category casino">
+        კაზინოს ოთახები: 103, 105, 112, 203, 205, 212, 312, 401-410, 501-502
+      </div>
+      <div class="room-category four-minibar">
+        <i class="fas fa-wine-bottle"></i>
+        ოთხი მინიბარი: 501
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KEEP ALL ORIGINAL MINIBAR INTERFACE ELEMENTS -->
 <!-- CHARGER/CABLE BUTTONS -->
 <div class="charger-buttons-container" id="chargerButtons">
   <button class="charger-btn" id="chargerBtn">
@@ -789,51 +934,6 @@ body{
     <div class="settings-item" id="viewInventory">
       <span>📋</span>
       <span>შევსება</span>
-    </div>
-  </div>
-</div>
-
-<!-- LOGIN SCREEN -->
-<div class="login-screen" id="loginScreen">
-  <div class="login-container">
-    <h1 class="login-title">მინიბარი</h1>
-    <p class="login-subtitle">შეიყვანეთ ოთახის ნომერი</p>
-    <input type="text" class="room-input" id="roomInput" placeholder="(მგ. 101 ან 2201)" maxlength="4" autofocus>
-    <button class="login-button" id="loginButton">შესვლა</button>
-    
-    <!-- ============ BUTTONS SECTION - WHERE NOTES BUTTON IS ADDED ============ -->
-    <!-- To move buttons higher or lower, change the margin-top value below -->
-    <!-- Current: margin-top: 25px (makes space from login button) -->
-    <!-- Increase to move down: margin-top: 35px -->
-    <!-- Decrease to move up: margin-top: 15px -->
-    <div style="margin-top: 50px; display: flex; flex-direction: column; gap: 5px;">
-      <!-- Minuses button - Red -->
-      <a href="minus.html" style="display: block; padding: 12px 20px; background: #ef4444; color: white; text-decoration: none; border-radius: 12px; border: 2px solid #000000; font-size: 17px; text-align: center; font-weight: bold;">
-        მინუსები
-      </a>
-      
-      <!-- NOTES BUTTON ADDED HERE - Purple -->
-      <!-- To change button position in order, move this <a> tag above or below other buttons -->
-      <!-- To change color, change background: #8b5cf6 to another color -->
-      <!-- To change size, adjust padding values (first is top/bottom, second is left/right) -->
-      <a href="notes.html" style="display: block; padding: 12px 5px; background: #8b5cf6; color: white; text-decoration: none; border-radius: 12px; border: 2px solid #000000; font-size: 17px; text-align: center; font-weight: bold;">
-       ჩაწერა
-      </a>
-    </div>
-    
-    <div class="error-message" id="errorMessage"></div>
-    <div class="valid-rooms">
-      <div style="margin-top: 5px; color: #fbbf24;">კაზინოს ოთახები: 103, 105, 112, 203, 205, 212, 312, 401-410, 501-502</div>
-      <div style="margin-top: 5px; color: #60a5fa;">ოთხი მინიბარი: 501</div>
-    </div>
-    
-    <!-- Inventory button - Green -->
-    <!-- To move this button, adjust margin-top value below -->
-    <!-- Current: margin-top: 25px (makes space from room info) -->
-    <div style="margin-top: 25px;">
-      <a href="inventory.html" style="display: block; padding: 12px 12px; background: #157e3e; color: white; text-decoration: none; border-radius: 12px; border: 2px solid #000000; font-size: 17px; text-align: center; font-weight: bold;">
-        შევსება
-      </a>
     </div>
   </div>
 </div>
@@ -890,6 +990,7 @@ body{
   </div>
 </div>
 
+<!-- KEEP ALL ORIGINAL JAVASCRIPT EXACTLY THE SAME -->
 <script>
   const PRODUCT_SORT_ORDER = [
     "Chacha",
