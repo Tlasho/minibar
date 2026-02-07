@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Minibar • კამორკები</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+    --primary: #8b5cf6;
+    --primary-dark: #7c3aed;
+    --primary-light: #a78bfa;
+    --success: #10b981;
+    --success-dark: #059669;
+    --success-light: #34d399;
+    --danger: #ef4444;
+    --danger-dark: #dc2626;
+    --danger-light: #f87171;
+    --warning: #f59e0b;
+    --background: #0f172a;
+    --surface: rgba(30, 41, 59, 0.8);
+    --surface-light: rgba(51, 65, 85, 0.4);
+    --text: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --border: rgba(99, 102, 241, 0.3);
+    --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    --card-shadow-hover: 0 16px 48px rgba(99, 102, 241, 0.2);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #4f46e5 100%);
+    --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    --glass: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --glow: 0 0 20px rgba(139, 92, 246, 0.3);
+    --blur-bg: rgba(15, 23, 42, 0.85);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    line-height: 1.6;
+    position: relative;
+}
+
+/* Animated Background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
+    z-index: -2;
+}
+
+/* Floating Particles Animation */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 5%),
+        radial-gradient(circle at 90% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 5%),
+        radial-gradient(circle at 30% 70%, rgba(59, 130, 246, 0.1) 0%, transparent 5%),
+        radial-gradient(circle at 70% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 5%);
+    background-size: 400px 400px;
+    z-index: -1;
+    animation: floatParticles 20s infinite linear;
+}
+
+@keyframes floatParticles {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(-200px) rotate(360deg); }
+}
+
+/* Back Button */
+.back-button {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    background: var(--glass);
+    backdrop-filter: blur(15px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 12px 18px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1001;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    touch-action: manipulation;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.back-button:hover {
+    background: rgba(139, 92, 246, 0.2);
+    transform: translateX(-4px) scale(1.05);
+    border-color: var(--primary);
+    box-shadow: var(--glow);
+}
+
+.back-button:active {
+    transform: translateX(-2px) scale(0.98);
+}
+
+/* Main Container */
+.main-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 90px 24px 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header */
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-title {
+    font-size: 32px;
+    font-weight: 800;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+}
+
+.page-subtitle {
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+/* Floor Buttons Container */
+.floors-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+    flex-shrink: 0;
+}
+
+.floor-button {
+    padding: 40px 20px;
+    background: var(--surface);
+    backdrop-filter: blur(25px) saturate(180%);
+    border: 2px solid var(--border);
+    border-radius: 24px;
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--text);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    position: relative;
+    overflow: hidden;
+}
+
+.floor-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.05));
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.floor-button:hover::before {
+    opacity: 1;
+}
+
+.floor-button:hover {
+    transform: translateY(-8px);
+    border-color: var(--primary);
+    box-shadow: var(--card-shadow-hover), var(--glow);
+}
+
+.floor-button:active {
+    transform: translateY(-2px);
+}
+
+/* Main Controls */
+.main-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+.main-control-button {
+    padding: 25px;
+    border: none;
+    border-radius: 20px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.5px;
+}
+
+.main-control-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0));
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.main-control-button:hover::before {
+    opacity: 1;
+}
+
+.main-control-button:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: var(--card-shadow-hover), var(--glow);
+}
+
+.main-control-button:active {
+    transform: translateY(-2px) scale(0.98);
+}
+
+.totals-btn {
+    background: var(--gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.totals-btn:hover {
+    box-shadow: 0 12px 35px rgba(139, 92, 246, 0.5), 0 0 40px rgba(139, 92, 246, 0.3);
+}
+
+.clear-btn {
+    background: var(--gradient-danger);
+    color: white;
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
+.clear-btn:hover {
+    box-shadow: 0 12px 35px rgba(239, 68, 68, 0.5), 0 0 40px rgba(239, 68, 68, 0.3);
+}
+
+/* MODALS - Full Screen */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--blur-bg);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+}
+
+.modal-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 100px 24px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+}
+
+.modal-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 80px;
+    height: 2px;
+    background: var(--gradient);
+    border-radius: 2px;
+}
+
+.modal-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.modal-title i {
+    font-size: 32px;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.modal-controls {
+    display: flex;
+    gap: 16px;
+}
+
+.modal-button {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    color: var(--text);
+}
+
+.modal-button:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--glow);
+}
+
+.modal-button.back-btn:hover {
+    transform: translateX(-4px);
+}
+
+.modal-button.done-btn {
+    background: var(--gradient-success);
+    color: white;
+    border: none;
+}
+
+.modal-button.done-btn:hover {
+    background: var(--success-dark);
+}
+
+/* Products Container in Floor Modal */
+.floor-products-container {
+    background: var(--surface);
+    backdrop-filter: blur(25px) saturate(180%);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    box-shadow: var(--card-shadow);
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.floor-products-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.05));
+    pointer-events: none;
+    z-index: 0;
+}
+
+.floor-products-scroll {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    right: 24px;
+    bottom: 24px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    z-index: 1;
+}
+
+.floor-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+    min-height: min-content;
+}
+
+/* Totals Container in Totals Modal */
+.totals-container {
+    background: var(--surface);
+    backdrop-filter: blur(25px) saturate(180%);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    box-shadow: var(--card-shadow);
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.totals-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.05));
+    pointer-events: none;
+    z-index: 0;
+}
+
+.totals-scroll {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    right: 24px;
+    bottom: 24px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    z-index: 1;
+}
+
+.totals-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Product Card in Floor Modal */
+.modal-product-card {
+    background: var(--glass);
+    backdrop-filter: blur(15px) saturate(180%);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    padding: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.modal-product-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.05));
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.modal-product-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    border-color: var(--primary);
+    box-shadow: var(--card-shadow-hover), var(--glow);
+}
+
+.modal-product-card:hover::before {
+    opacity: 1;
+}
+
+.modal-product-card:active {
+    transform: translateY(-2px) scale(0.99);
+}
+
+.modal-product-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-product-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    background: rgba(30, 41, 59, 0.8);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: var(--transition);
+}
+
+.modal-product-card:hover .modal-product-image {
+    border-color: var(--primary);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+}
+
+.modal-product-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+    letter-spacing: 0.3px;
+}
+
+/* Total Item in Totals Modal */
+.total-item {
+    background: var(--glass);
+    backdrop-filter: blur(15px) saturate(180%);
+    border-radius: 18px;
+    border: 1px solid var(--glass-border);
+    padding: 25px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+
+.total-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.05));
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.total-item:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: var(--card-shadow-hover), var(--glow);
+}
+
+.total-item:hover::before {
+    opacity: 1;
+}
+
+.total-product-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.total-product-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    background: rgba(30, 41, 59, 0.8);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.total-count {
+    font-size: 32px;
+    font-weight: 800;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Counter in Floor Modal */
+.modal-counter-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-counter-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    border: none;
+    font-size: 22px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-counter-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0));
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.modal-counter-button:hover::before {
+    opacity: 1;
+}
+
+.modal-counter-button:active {
+    transform: scale(0.92);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-counter-button.minus {
+    background: var(--gradient-danger);
+    color: white;
+}
+
+.modal-counter-button.minus:hover {
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4), 0 0 30px rgba(239, 68, 68, 0.3);
+}
+
+.modal-counter-button.plus {
+    background: var(--gradient-success);
+    color: white;
+}
+
+.modal-counter-button.plus:hover {
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4), 0 0 30px rgba(16, 185, 129, 0.3);
+}
+
+.modal-counter-display {
+    min-width: 70px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 800;
+    padding: 12px;
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 2px solid var(--border);
+    transition: all 0.15s ease;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* PRODUCT DETAIL MODAL */
+.product-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-detail-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.product-detail-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.product-detail-content {
+    position: relative;
+    background: var(--surface);
+    backdrop-filter: blur(25px) saturate(180%);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    padding: 40px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: var(--card-shadow), var(--glow);
+    animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.product-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.product-detail-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    background: rgba(30, 41, 59, 0.8);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.product-detail-name {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text);
+    flex: 1;
+}
+
+.product-detail-close {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 18px;
+}
+
+.product-detail-close:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: var(--danger);
+    transform: rotate(90deg);
+}
+
+.floor-distribution {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.floor-dist-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: var(--glass);
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    transition: var(--transition);
+}
+
+.floor-dist-item:hover {
+    transform: translateX(5px);
+    border-color: var(--primary);
+}
+
+.floor-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.floor-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: white;
+    background: var(--gradient);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+}
+
+.floor-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.floor-count {
+    font-size: 28px;
+    font-weight: 800;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-secondary);
+    animation: fadeIn 0.6s ease;
+}
+
+.empty-icon {
+    font-size: 72px;
+    margin-bottom: 24px;
+    opacity: 0.6;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.empty-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+}
+
+.empty-subtitle {
+    font-size: 16px;
+    max-width: 320px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Notification */
+.notification {
+    position: fixed;
+    top: 100px;
+    right: 24px;
+    background: var(--surface);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: 18px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    z-index: 2000;
+    box-shadow: var(--card-shadow), var(--glow);
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 320px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification.success {
+    border-left: 6px solid var(--success);
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.notification.error {
+    border-left: 6px solid var(--danger);
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.notification.info {
+    border-left: 6px solid var(--primary);
+    background: rgba(139, 92, 246, 0.15);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 10px;
+    margin: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gradient);
+    border-radius: 10px;
+    border: 2px solid rgba(30, 41, 59, 0.4);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+    .main-container {
+        padding: 90px 16px 16px;
+    }
+    
+    .floors-container {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .floor-button {
+        min-height: 120px;
+        font-size: 42px;
+        padding: 30px;
+    }
+    
+    .main-controls {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .main-control-button {
+        padding: 22px;
+        font-size: 16px;
+    }
+    
+    .modal-content {
+        padding: 80px 16px 16px;
+    }
+    
+    .floor-products-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-product-card {
+        padding: 16px;
+    }
+    
+    .modal-counter-display {
+        font-size: 24px;
+        min-width: 60px;
+        padding: 10px;
+    }
+    
+    .modal-counter-button {
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
+    
+    .back-button {
+        top: 16px;
+        left: 16px;
+    }
+    
+    .modal-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .modal-button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .total-item {
+        padding: 20px;
+    }
+    
+    .total-count {
+        font-size: 28px;
+    }
+    
+    .product-detail-content {
+        padding: 25px;
+        margin: 10px;
+    }
+    
+    .product-detail-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .floor-dist-item {
+        padding: 16px;
+    }
+    
+    .floor-count {
+        font-size: 24px;
+    }
+}
+</style>
+</head>
+<body>
+
+<!-- Back Button -->
+<a href="notes.html" class="back-button">
+    <i class="fas fa-arrow-left"></i>
+    <span>უკან</span>
+</a>
+
+<!-- Main Content -->
+<main class="main-container">
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">კამორკები</h1>
+        <p class="page-subtitle">აირჩიე სართული პროდუქტების ასარჩევად</p>
+    </div>
+    
+    <!-- Floor Selection -->
+    <div class="floors-container">
+        <button class="floor-button" data-floor="1">
+            I
+        </button>
+        <button class="floor-button" data-floor="2">
+            II
+        </button>
+        <button class="floor-button" data-floor="3">
+            III
+        </button>
+    </div>
+    
+    <!-- Main Controls -->
+    <div class="main-controls">
+        <button class="main-control-button totals-btn" id="totalsButton">
+            
+            <span>ჯამში შესავსებია</span>
+        </button>
+        <button class="main-control-button clear-btn" id="clearButton">
+            <i class="fas fa-trash-alt"></i>
+            <span>გასუფთავება</span>
+        </button>
+    </div>
+</main>
+
+<!-- Floor Modals -->
+<div class="modal" id="floorModal1">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-building"></i>
+                <span>სართული I</span>
+            </div>
+            <div class="modal-controls">
+                <button class="modal-button back-btn" id="backButton1">
+                    <i class="fas fa-arrow-left"></i>
+                    უკან
+                </button>
+                <button class="modal-button done-btn" id="doneButton1">
+                    <i class="fas fa-check"></i>
+                    მზადაა
+                </button>
+            </div>
+        </div>
+        
+        <div class="floor-products-container">
+            <div class="floor-products-scroll">
+                <div class="floor-products-grid" id="floorProducts1">
+                    <!-- Products for floor 1 will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="floorModal2">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-building"></i>
+                <span>სართული II</span>
+            </div>
+            <div class="modal-controls">
+                <button class="modal-button back-btn" id="backButton2">
+                    <i class="fas fa-arrow-left"></i>
+                    უკან
+                </button>
+                <button class="modal-button done-btn" id="doneButton2">
+                    <i class="fas fa-check"></i>
+                    მზადაა
+                </button>
+            </div>
+        </div>
+        
+        <div class="floor-products-container">
+            <div class="floor-products-scroll">
+                <div class="floor-products-grid" id="floorProducts2">
+                    <!-- Products for floor 2 will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="floorModal3">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-building"></i>
+                <span>სართული III</span>
+            </div>
+            <div class="modal-controls">
+                <button class="modal-button back-btn" id="backButton3">
+                    <i class="fas fa-arrow-left"></i>
+                    უკან
+                </button>
+                <button class="modal-button done-btn" id="doneButton3">
+                    <i class="fas fa-check"></i>
+                    მზადაა
+                </button>
+            </div>
+        </div>
+        
+        <div class="floor-products-container">
+            <div class="floor-products-scroll">
+                <div class="floor-products-grid" id="floorProducts3">
+                    <!-- Products for floor 3 will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Totals Modal -->
+<div class="modal" id="totalsModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-calculator"></i>
+                <span>ჯამური რაოდენობები</span>
+            </div>
+            <div class="modal-controls">
+                <button class="modal-button back-btn" id="backButtonTotals">
+                    <i class="fas fa-arrow-left"></i>
+                    უკან
+                </button>
+            </div>
+        </div>
+        
+        <div class="totals-container">
+            <div class="totals-scroll">
+                <div class="totals-grid" id="totalsGrid">
+                    <!-- Totals will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Detail Modal -->
+<div class="product-detail-modal" id="productDetailModal">
+    <div class="product-detail-backdrop"></div>
+    <div class="product-detail-content">
+        <div class="product-detail-header">
+            <img src="" alt="" class="product-detail-image" id="detailProductImage">
+            <div class="product-detail-name" id="detailProductName"></div>
+            <button class="product-detail-close" id="closeDetailButton">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="floor-distribution" id="floorDistribution">
+            <!-- Floor distribution will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Notification Container -->
+<div id="notificationContainer"></div>
+
+<script>
+// Product database for all floors
+const allProducts = [
+    { id: 1, name: "Cola", image: "https://product.hstatic.net/1000282430/product/nuoc-ngot-coca-cola-nhat-500ml_f61289e9a50d41398d9711800846f9b0_grande.jpg" },
+    { id: 2, name: "Redbull", image: "https://images.europroduct.ge/prod/7d1a791158/9a46837c83b04917aa53b2e5af25aed2_90376504.jpg?w=580" },
+    { id: 3, name: "Chips", image: "https://m.media-amazon.com/images/I/61w6Gc8ox6L.jpg" },
+    { id: 4, name: "Nuts", image: "https://cdn.2nabiji.ge/products/mitsis-thkhili-ola-mokhaluli-mariliani-300x300.webp" },
+    { id: 5, name: "Honey", image: "https://www.trubeehoney.com/cdn/shop/products/MINI_1024x1024.jpg?v=1620842945" },
+    { id: 7, name: "Water", image: "https://www.aversi.ge/uploads/matimg/293a37597e5b2ad1120984e131d7e82a.jpg" },
+    { id: 8, name: "Heineken", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfFQEReT42FKmj-5xxd6fmHEZhzop7IYXzsw&s" },
+    { id: 9, name: "Fruit Juice", image: "https://nikorasupermarket.ge/modules/current_promotions/uploads/16794.png" },
+    { id: 10, name: "nabeghlavi", image: "https://imagedelivery.net/d_EE26O5eWcJDRYn-qMBOg/3084d5f4-c3ec-40f4-05f5-c31c8cda5200/public" },
+    { id: 11, name: "Tsinandali", image: "https://8000vintages.ge/images/thumbnails/1200/1800/detailed/18/keburia_tsinandali_2022.png" },
+    { id: 12, name: "Khvanchkara", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROcYIQbB-ZZSjivKhrV9qU3yTMucHdBEobAg&s" },
+    { id: 13, name: "Saperavi", image: "https://8000vintages.ge/images/thumbnails/1200/1800/detailed/18/keburia_saperavi_2022.png" },
+    { id: 14, name: "Chacha", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1a0_3_lMeP_ps2j3oViU4CPpWHBrTlsiIHA&s" },
+    { id: 30, name: "Rafaelo", image: "https://www.axonprofil.de/static/items/520/17264_1.jpg" },
+    { id: 31, name: "M&M", image: "https://kcc.org.hk/wp-content/uploads/2023/09/MM20Chocolate20Peanut2037g.jpg" },
+    { id: 32, name: "Snickers", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSWZJpdqkpCmCBkEby1N1Sh0PeYbFvI8f7Ag&s" },
+    { id: 40, name: "Jameson", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzDOSSfqZfk056iMhz4Td1WpL6cglxeq9mLQ&s" },
+    { id: 41, name: "Finlandia", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2FeIzqvdhrRBCn1h18oijS9aurvuXndz7nA&s" },
+    { id: 42, name: "Johnnie Walker", image: "https://www.raschvin.com/wp-content/uploads/2022/05/rSL000843.jpg" },
+    { id: 43, name: "Henessy", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1tipPf_0i53dVnnKwP0p2LwCVBHmlNwcbhg&s" },
+    { id: 44, name: "Jack Daniels", image: "https://www.cebooze.com/app/uploads/2021/08/Jack-Daniel-Mini.jpg" },
+    { id: 45, name: "Sarajishvili", image: "https://winetime.com.ua/storage/fab93e692c41c3ac030b6c147b5eed12.jpeg" },
+    { id: 15, name: "moet", image: "https://cdn11.bigcommerce.com/s-9hu30/images/stencil/2048x2048/products/482/2416/moet_and_chandon_brut_imperial_187ml_mini_split__85900.1637085078.jpg?c=2" },
+    { id: 46, name: "glen moray", image: "https://www.astorwines.com/images/items/01024.jpg" }
+];
+
+// Gambling Manager
+const GamblingManager = {
+    getGamblingData() {
+        const gamblingData = localStorage.getItem('gamblingData');
+        return gamblingData ? JSON.parse(gamblingData) : {
+            floor1: {},
+            floor2: {},
+            floor3: {}
+        };
+    },
+    
+    saveGamblingData(data) {
+        localStorage.setItem('gamblingData', JSON.stringify(data));
+        return true;
+    },
+    
+    clearGamblingData() {
+        localStorage.setItem('gamblingData', JSON.stringify({
+            floor1: {},
+            floor2: {},
+            floor3: {}
+        }));
+        return true;
+    },
+    
+    updateProductCount(floor, productId, change) {
+        const data = this.getGamblingData();
+        const current = data[`floor${floor}`][productId] || 0;
+        const newCount = Math.max(0, current + change);
+        
+        if (newCount === 0) {
+            delete data[`floor${floor}`][productId];
+        } else {
+            data[`floor${floor}`][productId] = newCount;
+        }
+        
+        this.saveGamblingData(data);
+        return newCount;
+    },
+    
+    getProductCount(floor, productId) {
+        const data = this.getGamblingData();
+        return data[`floor${floor}`][productId] || 0;
+    },
+    
+    getAllProductsCount() {
+        const data = this.getGamblingData();
+        const allCounts = {};
+        
+        // Combine counts from all floors
+        for (let floor = 1; floor <= 3; floor++) {
+            const floorData = data[`floor${floor}`] || {};
+            for (const [productId, count] of Object.entries(floorData)) {
+                const productIdNum = parseInt(productId);
+                if (!allCounts[productIdNum]) {
+                    allCounts[productIdNum] = 0;
+                }
+                allCounts[productIdNum] += count;
+            }
+        }
+        
+        return allCounts;
+    },
+    
+    getProductDistribution(productId) {
+        const data = this.getGamblingData();
+        const distribution = {
+            floor1: data.floor1[productId] || 0,
+            floor2: data.floor2[productId] || 0,
+            floor3: data.floor3[productId] || 0
+        };
+        return distribution;
+    },
+    
+    getProductById(productId) {
+        return allProducts.find(product => product.id === productId);
+    }
+};
+
+// UI Manager
+class UIManager {
+    constructor() {
+        this.totalsButton = document.getElementById('totalsButton');
+        this.clearButton = document.getElementById('clearButton');
+        this.floorButtons = document.querySelectorAll('.floor-button');
+        this.modals = {
+            floor1: document.getElementById('floorModal1'),
+            floor2: document.getElementById('floorModal2'),
+            floor3: document.getElementById('floorModal3'),
+            totals: document.getElementById('totalsModal'),
+            productDetail: document.getElementById('productDetailModal')
+        };
+        this.notificationContainer = document.getElementById('notificationContainer');
+        this.closeDetailButton = document.getElementById('closeDetailButton');
+        
+        this.init();
+    }
+    
+    init() {
+        this.loadAllProducts();
+        this.setupEventListeners();
+    }
+    
+    loadAllProducts() {
+        // Load products for each floor modal
+        for (let floor = 1; floor <= 3; floor++) {
+            this.loadFloorProducts(floor);
+        }
+    }
+    
+    loadFloorProducts(floor) {
+        const productsGrid = document.getElementById(`floorProducts${floor}`);
+        const sortedProducts = [...allProducts].sort((a, b) => a.name.localeCompare(b.name));
+        
+        let productsHTML = '';
+        sortedProducts.forEach(product => {
+            const currentCount = GamblingManager.getProductCount(floor, product.id);
+            
+            productsHTML += `
+                <div class="modal-product-card">
+                    <div class="modal-product-header">
+                        <img src="${product.image}" alt="${product.name}" class="modal-product-image">
+                        <span class="modal-product-name">${product.name}</span>
+                    </div>
+                    <div class="modal-counter-container">
+                        <button class="modal-counter-button minus" data-floor="${floor}" data-product-id="${product.id}">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <div class="modal-counter-display" id="count-${floor}-${product.id}">
+                            ${currentCount}
+                        </div>
+                        <button class="modal-counter-button plus" data-floor="${floor}" data-product-id="${product.id}">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        productsGrid.innerHTML = productsHTML;
+    }
+    
+    loadTotals() {
+        const allCounts = GamblingManager.getAllProductsCount();
+        const totalsGrid = document.getElementById('totalsGrid');
+        
+        // Get products with non-zero counts
+        const productsWithCounts = allProducts
+            .filter(product => allCounts[product.id] > 0)
+            .sort((a, b) => a.name.localeCompare(b.name));
+        
+        if (productsWithCounts.length === 0) {
+            totalsGrid.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <p class="empty-subtitle">ჯერ არცერთი პროდუქტი არაა დამატებული</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let totalsHTML = '';
+        productsWithCounts.forEach(product => {
+            const totalCount = allCounts[product.id];
+            totalsHTML += `
+                <div class="total-item" data-product-id="${product.id}">
+                    <div class="total-product-name">
+                        <img src="${product.image}" alt="${product.name}" class="total-product-image">
+                        <span>${product.name}</span>
+                    </div>
+                    <div class="total-count">${totalCount}</div>
+                </div>
+            `;
+        });
+        
+        totalsGrid.innerHTML = totalsHTML;
+    }
+    
+    showProductDetail(productId) {
+        const product = GamblingManager.getProductById(productId);
+        if (!product) return;
+        
+        const distribution = GamblingManager.getProductDistribution(productId);
+        
+        // Set product details
+        document.getElementById('detailProductImage').src = product.image;
+        document.getElementById('detailProductImage').alt = product.name;
+        document.getElementById('detailProductName').textContent = product.name;
+        
+        // Create floor distribution HTML
+        const floorDistribution = document.getElementById('floorDistribution');
+        let distributionHTML = '';
+        
+        // Floor 1
+        if (distribution.floor1 > 0) {
+            distributionHTML += `
+                <div class="floor-dist-item">
+                    <div class="floor-info">
+                        <div class="floor-icon">I</div>
+                        <span class="floor-text">პირველზე</span>
+                    </div>
+                    <div class="floor-count">${distribution.floor1}</div>
+                </div>
+            `;
+        }
+        
+        // Floor 2
+        if (distribution.floor2 > 0) {
+            distributionHTML += `
+                <div class="floor-dist-item">
+                    <div class="floor-info">
+                        <div class="floor-icon">II</div>
+                        <span class="floor-text">მეორეზე</span>
+                    </div>
+                    <div class="floor-count">${distribution.floor2}</div>
+                </div>
+            `;
+        }
+        
+        // Floor 3
+        if (distribution.floor3 > 0) {
+            distributionHTML += `
+                <div class="floor-dist-item">
+                    <div class="floor-info">
+                        <div class="floor-icon">III</div>
+                        <span class="floor-text">მესამეზე</span>
+                    </div>
+                    <div class="floor-count">${distribution.floor3}</div>
+                </div>
+            `;
+        }
+        
+        // If no distribution on any floor
+        if (!distribution.floor1 && !distribution.floor2 && !distribution.floor3) {
+            distributionHTML = `
+                <div class="empty-state">
+                    <p class="empty-subtitle">ეს პროდუქტი არც ერთ სართულზე არაა დამატებული</p>
+                </div>
+            `;
+        }
+        
+        floorDistribution.innerHTML = distributionHTML;
+        
+        // Show the modal
+        this.modals.productDetail.classList.add('active');
+    }
+    
+    openModal(modalName) {
+        // If opening a floor modal, close product detail first
+        if (modalName.startsWith('floor')) {
+            this.closeModal('productDetail');
+        }
+        
+        // Close all other modals except product detail
+        for (const [name, modal] of Object.entries(this.modals)) {
+            if (name !== modalName && name !== 'productDetail') {
+                modal.classList.remove('active');
+            }
+        }
+        
+        const modal = this.modals[modalName];
+        if (modal) {
+            if (modalName === 'totals') {
+                this.loadTotals();
+            }
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    closeModal(modalName) {
+        const modal = this.modals[modalName];
+        if (modal) {
+            modal.classList.remove('active');
+            
+            // Only restore overflow if no modals are open
+            let anyModalOpen = false;
+            for (const [name, m] of Object.entries(this.modals)) {
+                if (m.classList.contains('active')) {
+                    anyModalOpen = true;
+                    break;
+                }
+            }
+            
+            if (!anyModalOpen) {
+                document.body.style.overflow = '';
+            }
+        }
+    }
+    
+    handleCounterClick(floor, productId, change) {
+        const newCount = GamblingManager.updateProductCount(floor, productId, change);
+        
+        // Update display in floor modal
+        const countElement = document.getElementById(`count-${floor}-${productId}`);
+        if (countElement) {
+            countElement.textContent = newCount;
+        }
+        
+        // Vibrate on mobile
+        this.vibrate(15);
+    }
+    
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        `;
+        
+        this.notificationContainer.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 2000);
+    }
+    
+    vibrate(duration) {
+        if (navigator.vibrate) {
+            navigator.vibrate(duration);
+        }
+    }
+    
+    setupEventListeners() {
+        // Floor buttons to open floor modals
+        this.floorButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const floor = parseInt(e.target.dataset.floor);
+                // Close product detail modal first
+                this.closeModal('productDetail');
+                // Then open the floor modal
+                this.openModal(`floor${floor}`);
+            });
+        });
+        
+        // Totals button to open totals modal
+        this.totalsButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Close product detail modal first
+            this.closeModal('productDetail');
+            // Then open totals modal
+            this.openModal('totals');
+        });
+        
+        // Clear button
+        this.clearButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (confirm('დარწმუნებული ხარ? ყველა მონაცემი წაიშლება')) {
+                GamblingManager.clearGamblingData();
+                this.loadAllProducts();
+                this.showNotification('გასუფთავებულია', 'success');
+                this.vibrate(100);
+                
+                // If totals modal is open, reload it
+                if (this.modals.totals.classList.contains('active')) {
+                    this.loadTotals();
+                }
+                
+                // If product detail modal is open, close it
+                if (this.modals.productDetail.classList.contains('active')) {
+                    this.closeModal('productDetail');
+                }
+            }
+        });
+        
+        // Back buttons for floor modals
+        for (let floor = 1; floor <= 3; floor++) {
+            const backButton = document.getElementById(`backButton${floor}`);
+            const doneButton = document.getElementById(`doneButton${floor}`);
+            
+            if (backButton) {
+                backButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.closeModal(`floor${floor}`);
+                });
+            }
+            
+            if (doneButton) {
+                doneButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.closeModal(`floor${floor}`);
+                    this.showNotification('დასრულებულია', 'success');
+                });
+            }
+        }
+        
+        // Back button for totals modal
+        const backButtonTotals = document.getElementById('backButtonTotals');
+        if (backButtonTotals) {
+            backButtonTotals.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.closeModal('totals');
+            });
+        }
+        
+        // Close button for product detail modal - JUST CLOSE PRODUCT DETAIL, KEEP TOTALS OPEN
+        if (this.closeDetailButton) {
+            this.closeDetailButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.closeModal('productDetail');
+                // Keep the totals modal open - don't restore overflow
+            });
+        }
+        
+        // Click on product in totals modal to show details
+        document.addEventListener('click', (e) => {
+            const totalItem = e.target.closest('.total-item');
+            if (totalItem) {
+                e.preventDefault();
+                const productId = parseInt(totalItem.dataset.productId);
+                if (!isNaN(productId)) {
+                    this.showProductDetail(productId);
+                }
+            }
+        });
+        
+        // Counter buttons in floor modals using event delegation
+        document.addEventListener('click', (e) => {
+            const counterButton = e.target.closest('.modal-counter-button');
+            if (counterButton) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const floor = parseInt(counterButton.dataset.floor);
+                const productId = parseInt(counterButton.dataset.productId);
+                const isMinus = counterButton.classList.contains('minus');
+                const change = isMinus ? -1 : 1;
+                
+                if (!isNaN(floor) && !isNaN(productId)) {
+                    this.handleCounterClick(floor, productId, change);
+                }
+            }
+        });
+        
+        // Touch events for mobile
+        document.addEventListener('touchstart', (e) => {
+            const counterButton = e.target.closest('.modal-counter-button');
+            if (counterButton) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const floor = parseInt(counterButton.dataset.floor);
+                const productId = parseInt(counterButton.dataset.productId);
+                const isMinus = counterButton.classList.contains('minus');
+                const change = isMinus ? -1 : 1;
+                
+                if (!isNaN(floor) && !isNaN(productId)) {
+                    this.handleCounterClick(floor, productId, change);
+                }
+            }
+        }, { passive: false });
+        
+        // Close modal when clicking on backdrop
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) {
+                    const modal = backdrop.closest('.modal');
+                    const modalId = modal.id;
+                    
+                    if (modalId === 'totalsModal') {
+                        this.closeModal('totals');
+                    } else if (modalId.startsWith('floorModal')) {
+                        const floor = modalId.replace('floorModal', '');
+                        this.closeModal(`floor${floor}`);
+                    }
+                }
+            });
+        });
+        
+        // Close product detail modal when clicking on backdrop - BUT KEEP TOTALS OPEN
+        const productDetailBackdrop = document.querySelector('.product-detail-backdrop');
+        if (productDetailBackdrop) {
+            productDetailBackdrop.addEventListener('click', (e) => {
+                if (e.target === productDetailBackdrop) {
+                    this.closeModal('productDetail');
+                    // Keep the totals modal open
+                }
+            });
+        }
+    }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.uiManager = new UIManager();
+    
+    // Prevent default behaviors
+    document.addEventListener('selectstart', (e) => {
+        e.preventDefault();
+        return false;
+    });
+    
+    document.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        return false;
+    });
+    
+    // Prevent iOS bounce
+    document.addEventListener('touchmove', (e) => {
+        if (!e.target.closest('.floor-products-scroll') && !e.target.closest('.totals-scroll')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    // Prevent zoom
+    document.addEventListener('gesturestart', (e) => {
+        e.preventDefault();
+    });
+});
+</script>
+</body>
+</html>

@@ -66,7 +66,7 @@
         
         #notesInput {
             width: 100%;
-            min-height: 400px; /* CHANGED FROM 300px TO 400px */
+            min-height: 400px;
             padding: 20px;
             background: #1e293b;
             border: 2px solid #475569;
@@ -106,6 +106,25 @@
         .clear-button:hover {
             background: #dc2626;
             transform: translateY(-2px);
+        }
+        
+        .gambling-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #4f46e5 100%);
+            color: white;
+        }
+        
+        .gambling-button:hover {
+            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #4338ca 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
         }
         
         .notification {
@@ -152,7 +171,7 @@
             }
             
             #notesInput {
-                min-height: 350px; /* CHANGED FROM 250px TO 350px for mobile */
+                min-height: 350px;
                 font-size: 14px;
             }
             
@@ -160,7 +179,8 @@
                 flex-direction: column;
             }
             
-            .clear-button {
+            .clear-button,
+            .gambling-button {
                 width: 100%;
             }
         }
@@ -169,7 +189,7 @@
 <body>
     <div class="notes-container">
         <div class="notes-header">
-            <h1 class="notes-title"> ჩაწერა</h1>
+            <h1 class="notes-title">ჩაწერა</h1>
             <a href="main.html" class="back-arrow" id="backButton">← უკან</a>
         </div>
         
@@ -179,6 +199,7 @@
         
         <div class="notes-controls">
             <button class="clear-button" id="clearButton">წაშლა</button>
+            <button class="gambling-button" id="gamblingButton">კამორკები</button>
         </div>
     </div>
 
@@ -186,9 +207,19 @@
         // DOM Elements
         const notesInput = document.getElementById('notesInput');
         const clearButton = document.getElementById('clearButton');
-        const notification = document.getElementById('notification');
-        const lastSaved = document.getElementById('lastSaved');
+        const gamblingButton = document.getElementById('gamblingButton');
         const backButton = document.getElementById('backButton');
+        
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        document.body.appendChild(notification);
+        
+        // Create last saved element
+        const lastSaved = document.createElement('div');
+        lastSaved.className = 'last-saved';
+        lastSaved.id = 'lastSaved';
+        document.querySelector('.notes-controls').after(lastSaved);
         
         // Variable to track if notes have changed
         let notesChanged = false;
@@ -203,7 +234,9 @@
             }
             
             if (savedTime) {
-                lastSaved.textContent = `Last saved: ${savedTime}`;
+                lastSaved.textContent = `ბოლო შენახვა: ${savedTime}`;
+            } else {
+                lastSaved.textContent = 'ბოლო შენახვა: არასდროს';
             }
         }
         
@@ -220,10 +253,10 @@
             localStorage.setItem('minibarNotesTime', timeString);
             
             // Update last saved display
-            lastSaved.textContent = `Last saved: ${timeString}`;
+            lastSaved.textContent = `ბოლო შენახვა: ${timeString}`;
             
             // Show notification
-            notification.textContent = 'Notes saved automatically!';
+            notification.textContent = 'შენახულია!';
             notification.classList.remove('error');
             notification.classList.add('show');
             
@@ -242,9 +275,9 @@
                 notesInput.value = '';
                 localStorage.removeItem('minibarNotes');
                 localStorage.removeItem('minibarNotesTime');
-                lastSaved.textContent = 'Last saved: Never';
+                lastSaved.textContent = 'ბოლო შენახვა: არასდროს';
                 
-                notification.textContent = 'Notes cleared!';
+                notification.textContent = 'გასუფთავებულია!';
                 notification.classList.remove('error');
                 notification.classList.add('show');
                 
@@ -254,6 +287,14 @@
                 
                 notesChanged = true;
             }
+        }
+        
+        // Navigate to gambling page
+        function goToGamblingPage() {
+            if (notesChanged) {
+                saveNotes();
+            }
+            window.location.href = 'gambling.html';
         }
         
         // Auto-save when text changes (with debounce)
@@ -285,8 +326,6 @@
         // Save when page is being unloaded (closing tab, refreshing, etc.)
         function handlePageUnload(e) {
             if (notesChanged) {
-                // Note: Most browsers block or limit synchronous localStorage in beforeunload
-                // So we'll use a try-catch and hope it works
                 try {
                     saveNotes();
                 } catch (error) {
@@ -297,6 +336,7 @@
         
         // Event Listeners
         clearButton.addEventListener('click', clearNotes);
+        gamblingButton.addEventListener('click', goToGamblingPage);
         notesInput.addEventListener('input', scheduleAutoSave);
         backButton.addEventListener('click', handleBackClick);
         
@@ -321,7 +361,7 @@
             if (notesChanged) {
                 saveNotes();
             }
-        }, 30000); // 30 seconds
+        }, 30000);
     </script>
 </body>
 </html>
